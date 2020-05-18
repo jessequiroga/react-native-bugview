@@ -1,13 +1,13 @@
 {
     "name": "react-native-bugview",
     "version": "1.0.1",
-    "main": "lib/index.js",
+    "main": "lib/BugView.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "build": "gulp"
     },
-    "jsnext:main": "es/index.js",
-    "typings": "./dts/index.d.ts",
+    "jsnext:main": "es/BugView.js",
+    "typings": "./dts/BugView.d.ts",
     "repository": {
         "type": "git",
         "url": "https://gitlab.com/AleksandrNikolaevich/react-native-bugview.git"
