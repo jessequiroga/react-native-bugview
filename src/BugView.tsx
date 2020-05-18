@@ -71,62 +71,71 @@ class BugView extends React.PureComponent<Props, State>{
     componentDidMount() {
         const { mailerSetup, onCrashReport } = this.props;
         if (!mailerSetup && !onCrashReport) return;
-        this.setState({ enabled: true })
-        Device.getInfo().then(info => this.deviceInfo = info);
+        this.setState({ enabled: true });
+
         fs
-            .stat(logFile)
-            .then(async file => {
-                if (!file) return;
+        .stat(logFile)
+        .then(async file => {
+            if (!file) return;
+            this.sendLog();
+        })
+        .catch(console.warn);
+    }
 
+    sendLog = async () => {
+        const { mailerSetup, onCrashReport } = this.props;
+        if (!mailerSetup && !onCrashReport) return;
 
-                let wasSent = false
+        Device.getInfo().then(info => this.deviceInfo = info);
 
-                if (mailerSetup) {
-                    try {
-                        await RNSmtpMailer.sendMail({
-                            port: "465",
-                            ssl: true, //if ssl: false, TLS is enabled,**note:** in iOS TLS/SSL is determined automatically, so either true or false is the same
-                            ...mailerSetup,
-                            attachmentPaths: [
-                                logFile
-                            ],
-                            attachmentNames: [
-                                "log.json",
-                            ], //only used in android, these are renames of original files. in ios filenames will be same as specified in path. In ios-only application, leave it empty: attachmentNames:[]
-                            attachmentTypes: ["json"] //needed for android, in ios-only application, leave it empty: attachmentTypes:[]. Generally every img(either jpg, png, jpeg or whatever) file should have "img", and every other file should have its corresponding type.
-                        })
-                        wasSent = true
-                    } catch (e) {
-                        for (let key in e) {
-                            console.warn(key, e[key])
-                        }
-                    }
+        let wasSent = false
 
+        if (mailerSetup) {
+            try {
+                await RNSmtpMailer.sendMail({
+                    port: "465",
+                    ssl: true, //if ssl: false, TLS is enabled,**note:** in iOS TLS/SSL is determined automatically, so either true or false is the same
+                    ...mailerSetup,
+                    attachmentPaths: [
+                        logFile
+                    ],
+                    attachmentNames: [
+                        "log.json",
+                    ], //only used in android, these are renames of original files. in ios filenames will be same as specified in path. In ios-only application, leave it empty: attachmentNames:[]
+                    attachmentTypes: ["json"] //needed for android, in ios-only application, leave it empty: attachmentTypes:[]. Generally every img(either jpg, png, jpeg or whatever) file should have "img", and every other file should have its corresponding type.
+                })
+                wasSent = true
+            } catch (e) {
+                for (let key in e) {
+                    console.warn(key, e[key])
                 }
+            }
 
-                if (onCrashReport) {
-                    try {
-                        await onCrashReport(logFile);
-                        wasSent = true
-                    } catch (e) {
+        }
 
-                    }
+        if (onCrashReport) {
+            try {
+                await onCrashReport(logFile);
+                wasSent = true
+            } catch (e) {
 
-                }
+            }
 
-                if (wasSent) {
-                    fs.unlink(logFile)
-                }
+        }
 
+        if (wasSent) {
+            fs.unlink(logFile)
+        }
 
-            })
-            .catch(console.warn);
+       
     }
 
 
     errorHandler = async (error: Error, isFatal: boolean) => {
-        if (!isFatal) return;
-        this.setState({ error });
+        if (isFatal) {
+            this.setState({ error });
+        }
+
         const timeline = await Promise.all<any>(this.timeline.map(e => {
             if (e.type === "image") {
                 return fs
@@ -136,8 +145,6 @@ class BugView extends React.PureComponent<Props, State>{
             }
             return Promise.resolve(e)
         }))
-
-        console.log(timeline);
 
         const log: Log = {
             date: format(new Date()),
@@ -153,7 +160,11 @@ class BugView extends React.PureComponent<Props, State>{
 
         fs
             .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
-            .then(console.log)
+            .then(()=>{
+                if(!isFatal){
+                    this.sendLog();
+                }
+            })
             .catch(console.warn)
 
     }

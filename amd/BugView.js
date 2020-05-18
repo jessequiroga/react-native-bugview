@@ -106,14 +106,67 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                 enabled: false
             };
             _this.deviceInfo = {};
+            _this.sendLog = function () { return __awaiter(_this, void 0, void 0, function () {
+                var _a, mailerSetup, onCrashReport, wasSent, e_1, key, e_2;
+                var _this = this;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
+                        case 0:
+                            _a = this.props, mailerSetup = _a.mailerSetup, onCrashReport = _a.onCrashReport;
+                            if (!mailerSetup && !onCrashReport)
+                                return [2 /*return*/];
+                            Device_1.default.getInfo().then(function (info) { return _this.deviceInfo = info; });
+                            wasSent = false;
+                            if (!mailerSetup) return [3 /*break*/, 4];
+                            _b.label = 1;
+                        case 1:
+                            _b.trys.push([1, 3, , 4]);
+                            return [4 /*yield*/, react_native_smtp_mailer_1.default.sendMail(__assign(__assign({ port: "465", ssl: true }, mailerSetup), { attachmentPaths: [
+                                        logFile
+                                    ], attachmentNames: [
+                                        "log.json",
+                                    ], attachmentTypes: ["json"] //needed for android, in ios-only application, leave it empty: attachmentTypes:[]. Generally every img(either jpg, png, jpeg or whatever) file should have "img", and every other file should have its corresponding type.
+                                 }))];
+                        case 2:
+                            _b.sent();
+                            wasSent = true;
+                            return [3 /*break*/, 4];
+                        case 3:
+                            e_1 = _b.sent();
+                            for (key in e_1) {
+                                console.warn(key, e_1[key]);
+                            }
+                            return [3 /*break*/, 4];
+                        case 4:
+                            if (!onCrashReport) return [3 /*break*/, 8];
+                            _b.label = 5;
+                        case 5:
+                            _b.trys.push([5, 7, , 8]);
+                            return [4 /*yield*/, onCrashReport(logFile)];
+                        case 6:
+                            _b.sent();
+                            wasSent = true;
+                            return [3 /*break*/, 8];
+                        case 7:
+                            e_2 = _b.sent();
+                            return [3 /*break*/, 8];
+                        case 8:
+                            if (wasSent) {
+                                react_native_fs_1.default.unlink(logFile);
+                            }
+                            return [2 /*return*/];
+                    }
+                });
+            }); };
             _this.errorHandler = function (error, isFatal) { return __awaiter(_this, void 0, void 0, function () {
                 var timeline, log;
+                var _this = this;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            if (!isFatal)
-                                return [2 /*return*/];
-                            this.setState({ error: error });
+                            if (isFatal) {
+                                this.setState({ error: error });
+                            }
                             return [4 /*yield*/, Promise.all(this.timeline.map(function (e) {
                                     if (e.type === "image") {
                                         return react_native_fs_1.default
@@ -125,7 +178,6 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                                 }))];
                         case 1:
                             timeline = _a.sent();
-                            console.log(timeline);
                             log = {
                                 date: format(new Date()),
                                 timeline: timeline,
@@ -139,7 +191,11 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                             };
                             react_native_fs_1.default
                                 .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
-                                .then(console.log)
+                                .then(function () {
+                                if (!isFatal) {
+                                    _this.sendLog();
+                                }
+                            })
                                 .catch(console.warn);
                             return [2 /*return*/];
                     }
@@ -178,56 +234,14 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
             if (!mailerSetup && !onCrashReport)
                 return;
             this.setState({ enabled: true });
-            Device_1.default.getInfo().then(function (info) { return _this.deviceInfo = info; });
             react_native_fs_1.default
                 .stat(logFile)
                 .then(function (file) { return __awaiter(_this, void 0, void 0, function () {
-                var wasSent, e_1, key, e_2;
                 return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            if (!file)
-                                return [2 /*return*/];
-                            wasSent = false;
-                            if (!mailerSetup) return [3 /*break*/, 4];
-                            _a.label = 1;
-                        case 1:
-                            _a.trys.push([1, 3, , 4]);
-                            return [4 /*yield*/, react_native_smtp_mailer_1.default.sendMail(__assign(__assign({ port: "465", ssl: true }, mailerSetup), { attachmentPaths: [
-                                        logFile
-                                    ], attachmentNames: [
-                                        "log.json",
-                                    ], attachmentTypes: ["json"] //needed for android, in ios-only application, leave it empty: attachmentTypes:[]. Generally every img(either jpg, png, jpeg or whatever) file should have "img", and every other file should have its corresponding type.
-                                 }))];
-                        case 2:
-                            _a.sent();
-                            wasSent = true;
-                            return [3 /*break*/, 4];
-                        case 3:
-                            e_1 = _a.sent();
-                            for (key in e_1) {
-                                console.warn(key, e_1[key]);
-                            }
-                            return [3 /*break*/, 4];
-                        case 4:
-                            if (!onCrashReport) return [3 /*break*/, 8];
-                            _a.label = 5;
-                        case 5:
-                            _a.trys.push([5, 7, , 8]);
-                            return [4 /*yield*/, onCrashReport(logFile)];
-                        case 6:
-                            _a.sent();
-                            wasSent = true;
-                            return [3 /*break*/, 8];
-                        case 7:
-                            e_2 = _a.sent();
-                            return [3 /*break*/, 8];
-                        case 8:
-                            if (wasSent) {
-                                react_native_fs_1.default.unlink(logFile);
-                            }
-                            return [2 /*return*/];
-                    }
+                    if (!file)
+                        return [2 /*return*/];
+                    this.sendLog();
+                    return [2 /*return*/];
                 });
             }); })
                 .catch(console.warn);

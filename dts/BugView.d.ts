@@ -31,6 +31,7 @@ declare class BugView extends React.PureComponent<Props, State> {
     deviceInfo: TDeviceInfo;
     constructor(props: Props);
     componentDidMount(): void;
+    sendLog: () => Promise<void>;
     errorHandler: (error: Error, isFatal: boolean) => Promise<void>;
     addEvent: (type: EventType) => (data: any) => void;
     trackTouches: (eventType: "start" | "move" | "end") => (e: any) => void;
