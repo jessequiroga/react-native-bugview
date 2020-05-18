@@ -4,22 +4,10 @@ import fs from "react-native-fs";
 import { Alert, View, Text, Platform } from "react-native";
 import { setJSExceptionHandler } from "react-native-exception-handler";
 import moment from "moment";
-//@ts-ignore
-import RNSmtpMailer from "react-native-smtp-mailer";
 import Device, { TDeviceInfo } from "./Device";
 
 type Props = {
     appVersion?: string,
-    mailerSetup?: {
-        mailhost: string,
-        port?: string,
-        username: string,
-        password: string,
-        from: string,
-        recipients: string,
-        subject: string,
-        htmlBody: string,
-    },
     onCrashReport?: (uri: string) => Promise<void>,
     renderErrorScreen?: (e: Error) => React.ReactNode
 }
@@ -52,7 +40,7 @@ function format(date: Date, format: string = "DD.MM.YYYY") {
     return moment(date).format(format)
 }
 
-const bugviewVersion = "0.0.1";
+const bugviewVersion = "0.0.2";
 
 class BugView extends React.PureComponent<Props, State>{
 
@@ -69,49 +57,26 @@ class BugView extends React.PureComponent<Props, State>{
     }
 
     componentDidMount() {
-        const { mailerSetup, onCrashReport } = this.props;
-        if (!mailerSetup && !onCrashReport) return;
+        const { onCrashReport } = this.props;
+        if (!onCrashReport) return;
         this.setState({ enabled: true });
 
         fs
-        .stat(logFile)
-        .then(async file => {
-            if (!file) return;
-            this.sendLog();
-        })
-        .catch(console.warn);
+            .stat(logFile)
+            .then(async file => {
+                if (!file) return;
+                this.sendLog();
+            })
+            .catch(console.warn);
     }
 
     sendLog = async () => {
-        const { mailerSetup, onCrashReport } = this.props;
-        if (!mailerSetup && !onCrashReport) return;
+        const { onCrashReport } = this.props;
+        if (!onCrashReport) return;
 
         Device.getInfo().then(info => this.deviceInfo = info);
 
         let wasSent = false
-
-        if (mailerSetup) {
-            try {
-                await RNSmtpMailer.sendMail({
-                    port: "465",
-                    ssl: true, //if ssl: false, TLS is enabled,**note:** in iOS TLS/SSL is determined automatically, so either true or false is the same
-                    ...mailerSetup,
-                    attachmentPaths: [
-                        logFile
-                    ],
-                    attachmentNames: [
-                        "log.json",
-                    ], //only used in android, these are renames of original files. in ios filenames will be same as specified in path. In ios-only application, leave it empty: attachmentNames:[]
-                    attachmentTypes: ["json"] //needed for android, in ios-only application, leave it empty: attachmentTypes:[]. Generally every img(either jpg, png, jpeg or whatever) file should have "img", and every other file should have its corresponding type.
-                })
-                wasSent = true
-            } catch (e) {
-                for (let key in e) {
-                    console.warn(key, e[key])
-                }
-            }
-
-        }
 
         if (onCrashReport) {
             try {
@@ -127,7 +92,7 @@ class BugView extends React.PureComponent<Props, State>{
             fs.unlink(logFile)
         }
 
-       
+
     }
 
 
@@ -160,8 +125,8 @@ class BugView extends React.PureComponent<Props, State>{
 
         fs
             .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
-            .then(()=>{
-                if(!isFatal){
+            .then(() => {
+                if (!isFatal) {
                     this.sendLog();
                 }
             })

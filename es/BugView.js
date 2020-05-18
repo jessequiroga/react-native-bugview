@@ -11,17 +11,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -64,8 +53,6 @@ import fs from "react-native-fs";
 import { View, Platform } from "react-native";
 import { setJSExceptionHandler } from "react-native-exception-handler";
 import moment from "moment";
-//@ts-ignore
-import RNSmtpMailer from "react-native-smtp-mailer";
 import Device from "./Device";
 var logFile = fs.DocumentDirectoryPath + "/log.json";
 var rate = Platform.select({ ios: 500, android: 700 });
@@ -73,7 +60,7 @@ function format(date, format) {
     if (format === void 0) { format = "DD.MM.YYYY"; }
     return moment(date).format(format);
 }
-var bugviewVersion = "0.0.1";
+var bugviewVersion = "0.0.2";
 var BugView = /** @class */ (function (_super) {
     __extends(BugView, _super);
     function BugView(props) {
@@ -85,50 +72,29 @@ var BugView = /** @class */ (function (_super) {
         };
         _this.deviceInfo = {};
         _this.sendLog = function () { return __awaiter(_this, void 0, void 0, function () {
-            var _a, mailerSetup, onCrashReport, wasSent, e_1, key, e_2;
+            var onCrashReport, wasSent, e_1;
             var _this = this;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        _a = this.props, mailerSetup = _a.mailerSetup, onCrashReport = _a.onCrashReport;
-                        if (!mailerSetup && !onCrashReport)
+                        onCrashReport = this.props.onCrashReport;
+                        if (!onCrashReport)
                             return [2 /*return*/];
                         Device.getInfo().then(function (info) { return _this.deviceInfo = info; });
                         wasSent = false;
-                        if (!mailerSetup) return [3 /*break*/, 4];
-                        _b.label = 1;
+                        if (!onCrashReport) return [3 /*break*/, 4];
+                        _a.label = 1;
                     case 1:
-                        _b.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, RNSmtpMailer.sendMail(__assign(__assign({ port: "465", ssl: true }, mailerSetup), { attachmentPaths: [
-                                    logFile
-                                ], attachmentNames: [
-                                    "log.json",
-                                ], attachmentTypes: ["json"] //needed for android, in ios-only application, leave it empty: attachmentTypes:[]. Generally every img(either jpg, png, jpeg or whatever) file should have "img", and every other file should have its corresponding type.
-                             }))];
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, onCrashReport(logFile)];
                     case 2:
-                        _b.sent();
+                        _a.sent();
                         wasSent = true;
                         return [3 /*break*/, 4];
                     case 3:
-                        e_1 = _b.sent();
-                        for (key in e_1) {
-                            console.warn(key, e_1[key]);
-                        }
+                        e_1 = _a.sent();
                         return [3 /*break*/, 4];
                     case 4:
-                        if (!onCrashReport) return [3 /*break*/, 8];
-                        _b.label = 5;
-                    case 5:
-                        _b.trys.push([5, 7, , 8]);
-                        return [4 /*yield*/, onCrashReport(logFile)];
-                    case 6:
-                        _b.sent();
-                        wasSent = true;
-                        return [3 /*break*/, 8];
-                    case 7:
-                        e_2 = _b.sent();
-                        return [3 /*break*/, 8];
-                    case 8:
                         if (wasSent) {
                             fs.unlink(logFile);
                         }
@@ -208,8 +174,8 @@ var BugView = /** @class */ (function (_super) {
     }
     BugView.prototype.componentDidMount = function () {
         var _this = this;
-        var _a = this.props, mailerSetup = _a.mailerSetup, onCrashReport = _a.onCrashReport;
-        if (!mailerSetup && !onCrashReport)
+        var onCrashReport = this.props.onCrashReport;
+        if (!onCrashReport)
             return;
         this.setState({ enabled: true });
         fs

@@ -1,6 +1,6 @@
 {
     "name": "react-native-bugview",
-    "version": "1.0.1",
+    "version": "0.0.2",
     "main": "lib/BugView.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -29,7 +29,6 @@
         "react-native-exception-handler": "^2.10.8",
         "react-native-fs": "^2.16.6",
         "moment": "^2.25.3",
-        "react-native-smtp-mailer": "^1.2.2",
         "react-native-view-shot": "^3.1.2"
     }
 }

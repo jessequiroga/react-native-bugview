@@ -2,16 +2,6 @@ import * as React from "react";
 import { TDeviceInfo } from "./Device";
 declare type Props = {
     appVersion?: string;
-    mailerSetup?: {
-        mailhost: string;
-        port?: string;
-        username: string;
-        password: string;
-        from: string;
-        recipients: string;
-        subject: string;
-        htmlBody: string;
-    };
     onCrashReport?: (uri: string) => Promise<void>;
     renderErrorScreen?: (e: Error) => React.ReactNode;
 };
