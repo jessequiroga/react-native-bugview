@@ -212,6 +212,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
             if (!onCrashReport)
                 return;
             this.setState({ enabled: true });
+            this.initNetworkLogger();
             react_native_fs_1.default
                 .stat(logFile)
                 .then(function (file) { return __awaiter(_this, void 0, void 0, function () {

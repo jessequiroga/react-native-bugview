@@ -189,6 +189,7 @@ var BugView = /** @class */ (function (_super) {
         if (!onCrashReport)
             return;
         this.setState({ enabled: true });
+        this.initNetworkLogger();
         fs
             .stat(logFile)
             .then(function (file) { return __awaiter(_this, void 0, void 0, function () {
