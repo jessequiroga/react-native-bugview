@@ -109,7 +109,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
             _this.deviceInfo = {};
             _this.initNetworkLogger = function () {
                 networkLogger.setCallback(_this.addEvent("request"));
-                networkLogger.setStartRequestCallback(_this.addEvent("request"));
+                networkLogger.setStartRequestCallback(_this.addEvent("response"));
                 networkLogger.enableXHRInterception();
             };
             _this.sendLog = function () { return __awaiter(_this, void 0, void 0, function () {

@@ -12,7 +12,7 @@ declare type State = {
     error: Error | undefined;
     enabled: boolean;
 };
-declare type EventType = 'image' | 'request' | 'touch';
+declare type EventType = 'image' | 'request' | 'response' | 'touch';
 declare type Event = {
     time: number;
     type: EventType;

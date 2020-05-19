@@ -21,7 +21,7 @@ type State = {
     enabled: boolean
 }
 
-type EventType = 'image' | 'request' | 'touch';
+type EventType = 'image' | 'request' | 'response' | 'touch';
 
 type Event = {
     time: number,
@@ -79,7 +79,7 @@ class BugView extends React.PureComponent<Props, State>{
 
     initNetworkLogger = () => {
         networkLogger.setCallback(this.addEvent("request"));
-        networkLogger.setStartRequestCallback(this.addEvent("request"));
+        networkLogger.setStartRequestCallback(this.addEvent("response"));
         networkLogger.enableXHRInterception();
     }
 
