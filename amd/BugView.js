@@ -113,41 +113,25 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                 networkLogger.enableXHRInterception();
             };
             _this.sendLog = function () { return __awaiter(_this, void 0, void 0, function () {
-                var onCrashReport, _a, wasSent, e_1, e_2;
-                return __generator(this, function (_b) {
-                    switch (_b.label) {
+                var onCrashReport, e_1;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
                         case 0:
-                            _b.trys.push([0, 6, , 7]);
                             onCrashReport = this.props.onCrashReport;
                             if (!onCrashReport)
                                 return [2 /*return*/];
-                            _a = this;
-                            return [4 /*yield*/, Device_1.default.getInfo()];
+                            _a.label = 1;
                         case 1:
-                            _a.deviceInfo = _b.sent();
-                            wasSent = false;
-                            if (!onCrashReport) return [3 /*break*/, 5];
-                            _b.label = 2;
-                        case 2:
-                            _b.trys.push([2, 4, , 5]);
+                            _a.trys.push([1, 3, , 4]);
                             return [4 /*yield*/, onCrashReport(logFile)];
+                        case 2:
+                            _a.sent();
+                            react_native_fs_1.default.unlink(logFile);
+                            return [3 /*break*/, 4];
                         case 3:
-                            _b.sent();
-                            wasSent = true;
-                            return [3 /*break*/, 5];
-                        case 4:
-                            e_1 = _b.sent();
-                            return [3 /*break*/, 5];
-                        case 5:
-                            if (wasSent) {
-                                react_native_fs_1.default.unlink(logFile);
-                            }
-                            return [3 /*break*/, 7];
-                        case 6:
-                            e_2 = _b.sent();
-                            react_native_1.Alert.alert("err", e_2.message);
-                            return [3 /*break*/, 7];
-                        case 7: return [2 /*return*/];
+                            e_1 = _a.sent();
+                            return [3 /*break*/, 4];
+                        case 4: return [2 /*return*/];
                     }
                 });
             }); };
@@ -221,6 +205,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                 return;
             this.setState({ enabled: true });
             this.initNetworkLogger();
+            Device_1.default.getInfo().then(function (info) { return _this.deviceInfo = info; });
             react_native_fs_1.default
                 .stat(logFile)
                 .then(function (file) { return __awaiter(_this, void 0, void 0, function () {

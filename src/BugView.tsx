@@ -67,6 +67,7 @@ class BugView extends React.PureComponent<Props, State>{
         if (!onCrashReport) return;
         this.setState({ enabled: true });
         this.initNetworkLogger();
+        Device.getInfo().then(info => this.deviceInfo = info);
         fs
             .stat(logFile)
             .then(async file => {
@@ -83,30 +84,15 @@ class BugView extends React.PureComponent<Props, State>{
     }
 
     sendLog = async () => {
-        try{
-            const { onCrashReport } = this.props;
-            if (!onCrashReport) return;
-    
-            this.deviceInfo = await Device.getInfo()
-            let wasSent = false
-    
-            if (onCrashReport) {
-                try {
-                    await onCrashReport(logFile);
-                    wasSent = true
-                } catch (e) {
-    
-                }
-    
-            }
-    
-            if (wasSent) {
-                fs.unlink(logFile)
-            }
-        } catch(e){
-            Alert.alert("err", e.message)
-        }
+        const { onCrashReport } = this.props;
+        if (!onCrashReport) return;
 
+        try {
+            await onCrashReport(logFile);
+            fs.unlink(logFile)
+        } catch (e) {
+
+        }
     }
 
 
@@ -170,7 +156,7 @@ class BugView extends React.PureComponent<Props, State>{
         this.addEvent("touch")(touchEvent)
     }
 
-    get recordTime(){
+    get recordTime() {
         return this.props.recordTime || 15
     }
 
