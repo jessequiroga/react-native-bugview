@@ -142,8 +142,10 @@ class BugView extends React.PureComponent<Props, State>{
 
     jsErrorHandler = async (error: Error, isFatal: boolean) => {
         this.createReport({
-            type: "native",
-            ...error
+            type: "js",
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
         })
 
     }
