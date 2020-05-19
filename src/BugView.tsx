@@ -173,7 +173,10 @@ class BugView extends React.PureComponent<Props, State>{
             return renderErrorScreen({
                 error, 
                 savingReport,
-                restartApp: ()=>this.setState({ error: undefined })
+                restartApp: ()=>{
+                    this.sendLog();
+                    this.setState({ error: undefined });
+                }
             })
         }
 

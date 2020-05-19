@@ -238,7 +238,10 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                 return renderErrorScreen({
                     error: error,
                     savingReport: savingReport,
-                    restartApp: function () { return _this.setState({ error: undefined }); }
+                    restartApp: function () {
+                        _this.sendLog();
+                        _this.setState({ error: undefined });
+                    }
                 });
             }
             var touchEvents = {};
