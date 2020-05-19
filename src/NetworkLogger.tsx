@@ -4,6 +4,7 @@ import XHRInterceptor from 'react-native/Libraries/Network/XHRInterceptor'
 let nextXHRId = 0
 
 class NetworkRequestInfo {
+    id = 0
     type = ''
     url = ''
     method = ''
@@ -22,7 +23,8 @@ class NetworkRequestInfo {
     serverClose = undefined
     serverError = undefined
 
-    constructor(type: string, method: string, url: string) {
+    constructor(id: number, type: string, method: string, url: string) {
+        this.id = id
         this.type = type
         this.method = method
         this.url = url
@@ -67,7 +69,7 @@ export default class NetworkLogger {
             const xhrIndex = this._requests.length
             this._xhrIdMap[xhr._index] = xhrIndex
 
-            const _xhr = new NetworkRequestInfo('XMLHttpRequest', method, url)
+            const _xhr = new NetworkRequestInfo(xhrIndex, 'XMLHttpRequest', method, url)
 
             this._requests.push(_xhr)
         })
@@ -90,7 +92,7 @@ export default class NetworkLogger {
                 return
             }
             this._requests[xhrIndex].dataSent = data;
-            this.startRequestCallback && this.startRequestCallback(this._requests[xhrIndex])
+            this.startRequestCallback && this.startRequestCallback({...this._requests[xhrIndex]})
         })
 
         XHRInterceptor.setHeaderReceivedCallback(

@@ -79,8 +79,8 @@ class BugView extends React.PureComponent<Props, State>{
     }
 
     initNetworkLogger = () => {
-        networkLogger.setCallback(this.addEvent("request"));
-        networkLogger.setStartRequestCallback(this.addEvent("response"));
+        networkLogger.setCallback(this.addEvent("response"));
+        networkLogger.setStartRequestCallback(this.addEvent("request"));
         networkLogger.enableXHRInterception();
     }
 

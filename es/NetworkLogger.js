@@ -1,8 +1,20 @@
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 //@ts-ignore
 import XHRInterceptor from 'react-native/Libraries/Network/XHRInterceptor';
 var nextXHRId = 0;
 var NetworkRequestInfo = /** @class */ (function () {
-    function NetworkRequestInfo(type, method, url) {
+    function NetworkRequestInfo(id, type, method, url) {
+        this.id = 0;
         this.type = '';
         this.url = '';
         this.method = '';
@@ -20,6 +32,7 @@ var NetworkRequestInfo = /** @class */ (function () {
         this.messages = '';
         this.serverClose = undefined;
         this.serverError = undefined;
+        this.id = id;
         this.type = type;
         this.method = method;
         this.url = url;
@@ -60,7 +73,7 @@ var NetworkLogger = /** @class */ (function () {
             xhr._index = nextXHRId++;
             var xhrIndex = _this._requests.length;
             _this._xhrIdMap[xhr._index] = xhrIndex;
-            var _xhr = new NetworkRequestInfo('XMLHttpRequest', method, url);
+            var _xhr = new NetworkRequestInfo(xhrIndex, 'XMLHttpRequest', method, url);
             _this._requests.push(_xhr);
         });
         XHRInterceptor.setRequestHeaderCallback(function (header, value, xhr) {
@@ -80,7 +93,7 @@ var NetworkLogger = /** @class */ (function () {
                 return;
             }
             _this._requests[xhrIndex].dataSent = data;
-            _this.startRequestCallback && _this.startRequestCallback(_this._requests[xhrIndex]);
+            _this.startRequestCallback && _this.startRequestCallback(__assign({}, _this._requests[xhrIndex]));
         });
         XHRInterceptor.setHeaderReceivedCallback(function (type, size, responseHeaders, xhr) {
             var xhrIndex = _this._getRequestIndexByXHRID(xhr._index);

@@ -1,4 +1,5 @@
 declare class NetworkRequestInfo {
+    id: number;
     type: string;
     url: string;
     method: string;
@@ -16,7 +17,7 @@ declare class NetworkRequestInfo {
     messages: string;
     serverClose: undefined;
     serverError: undefined;
-    constructor(type: string, method: string, url: string);
+    constructor(id: number, type: string, method: string, url: string);
 }
 declare type Callback = (e: NetworkRequestInfo) => void;
 export default class NetworkLogger {
