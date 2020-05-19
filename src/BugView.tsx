@@ -66,7 +66,7 @@ class BugView extends React.PureComponent<Props, State>{
         const { onCrashReport } = this.props;
         if (!onCrashReport) return;
         this.setState({ enabled: true });
-
+        this.initNetworkLogger();
         fs
             .stat(logFile)
             .then(async file => {
