@@ -5,7 +5,7 @@ declare type Props = {
     onCrashReport?: (uri: string) => Promise<void>;
     onSaveReport?: () => void;
     renderErrorScreen?: (props: {
-        error: Error;
+        error: TError;
         savingReport: boolean;
         restartApp: () => void;
     }) => React.ReactNode;
@@ -14,7 +14,7 @@ declare type Props = {
     recordTime?: number;
 };
 declare type State = {
-    error: Error | undefined;
+    error: TError | undefined;
     enabled: boolean;
     savingReport: boolean;
 };
@@ -24,6 +24,9 @@ declare type Event = {
     type: EventType;
     data: any;
 };
+declare type TError = Partial<Error> & {
+    type: "js" | "native";
+};
 declare class BugView extends React.PureComponent<Props, State> {
     timeline: Event[];
     state: State;
@@ -32,7 +35,9 @@ declare class BugView extends React.PureComponent<Props, State> {
     componentDidMount(): void;
     initNetworkLogger: () => void;
     sendLog: () => Promise<void>;
-    errorHandler: (error: Error, isFatal: boolean) => Promise<void>;
+    createReport: (error: TError) => Promise<void>;
+    nativeErrorHandler: (error: string) => Promise<void>;
+    jsErrorHandler: (error: Error, isFatal: boolean) => Promise<void>;
     addEvent: (type: EventType) => (data: any) => void;
     trackTouches: (eventType: "start" | "move" | "end") => (e: any) => void;
     get recordTime(): number;

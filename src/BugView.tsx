@@ -2,7 +2,7 @@ import * as React from "react";
 import ScreenLogger from "./ScreenLogger";
 import fs from "react-native-fs";
 import { Alert, View, Text, Platform } from "react-native";
-import { setJSExceptionHandler } from "react-native-exception-handler";
+import { setJSExceptionHandler, setNativeExceptionHandler } from "react-native-exception-handler";
 import moment from "moment";
 import Device, { TDeviceInfo } from "./Device";
 import NetworkLogger from "./NetworkLogger";
@@ -10,15 +10,15 @@ import NetworkLogger from "./NetworkLogger";
 type Props = {
     appVersion?: string,
     onCrashReport?: (uri: string) => Promise<void>,
-    onSaveReport?: ()=>void,
-    renderErrorScreen?: (props: {error: Error, savingReport: boolean, restartApp: ()=>void}) => React.ReactNode,
+    onSaveReport?: () => void,
+    renderErrorScreen?: (props: { error: TError, savingReport: boolean, restartApp: () => void }) => React.ReactNode,
     disableRecordScreen?: boolean,
     devMode?: boolean,
     recordTime?: number
 }
 
 type State = {
-    error: Error | undefined,
+    error: TError | undefined,
     enabled: boolean,
     savingReport: boolean
 }
@@ -31,12 +31,14 @@ type Event = {
     data: any
 }
 
+type TError = Partial<Error> & { type: "js" | "native" }
+
 type Log = {
     date: string,
     bugviewVersion: string,
     deviceInfo: TDeviceInfo,
     timeline: Event[],
-    error: Error
+    error: TError
 }
 
 const logFile = fs.DocumentDirectoryPath + `/log.json`;
@@ -62,7 +64,8 @@ class BugView extends React.PureComponent<Props, State>{
 
     constructor(props: Props) {
         super(props);
-        setJSExceptionHandler(this.errorHandler, props.devMode)
+        setJSExceptionHandler(this.jsErrorHandler, props.devMode);
+        setNativeExceptionHandler(this.nativeErrorHandler, true);
     }
 
     componentDidMount() {
@@ -99,7 +102,7 @@ class BugView extends React.PureComponent<Props, State>{
     }
 
 
-    errorHandler = async (error: Error, isFatal: boolean) => {
+    createReport = async (error: TError) => {
         this.setState({ error, savingReport: true });
 
         const timeline = await Promise.all<any>(this.timeline.map(e => {
@@ -117,20 +120,31 @@ class BugView extends React.PureComponent<Props, State>{
             timeline,
             deviceInfo: this.deviceInfo,
             bugviewVersion,
-            error: {
-                name: error.name,
-                message: error.message,
-                stack: error.stack
-            }
+            error
         }
 
         fs
             .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
-            .then(() => { 
+            .then(() => {
                 this.setState({ savingReport: false });
                 this.props.onSaveReport && this.props.onSaveReport()
             })
             .catch(console.warn)
+    }
+
+    nativeErrorHandler = async (error: string) => {
+        this.createReport({
+            type: "native",
+            message: error
+        })
+
+    }
+
+    jsErrorHandler = async (error: Error, isFatal: boolean) => {
+        this.createReport({
+            type: "native",
+            ...error
+        })
 
     }
 
@@ -171,9 +185,9 @@ class BugView extends React.PureComponent<Props, State>{
         const { error, enabled, savingReport } = this.state;
         if (error && renderErrorScreen) {
             return renderErrorScreen({
-                error, 
+                error,
                 savingReport,
-                restartApp: ()=>{
+                restartApp: () => {
                     this.sendLog();
                     this.setState({ error: undefined });
                 }

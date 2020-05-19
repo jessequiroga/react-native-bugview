@@ -136,7 +136,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                     }
                 });
             }); };
-            _this.errorHandler = function (error, isFatal) { return __awaiter(_this, void 0, void 0, function () {
+            _this.createReport = function (error) { return __awaiter(_this, void 0, void 0, function () {
                 var timeline, log;
                 var _this = this;
                 return __generator(this, function (_a) {
@@ -159,11 +159,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                                 timeline: timeline,
                                 deviceInfo: this.deviceInfo,
                                 bugviewVersion: bugviewVersion,
-                                error: {
-                                    name: error.name,
-                                    message: error.message,
-                                    stack: error.stack
-                                }
+                                error: error
                             };
                             react_native_fs_1.default
                                 .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
@@ -174,6 +170,21 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                                 .catch(console.warn);
                             return [2 /*return*/];
                     }
+                });
+            }); };
+            _this.nativeErrorHandler = function (error) { return __awaiter(_this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    this.createReport({
+                        type: "native",
+                        message: error
+                    });
+                    return [2 /*return*/];
+                });
+            }); };
+            _this.jsErrorHandler = function (error, isFatal) { return __awaiter(_this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    this.createReport(__assign({ type: "native" }, error));
+                    return [2 /*return*/];
                 });
             }); };
             _this.addEvent = function (type) { return function (data) {
@@ -200,7 +211,8 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                 };
                 _this.addEvent("touch")(touchEvent);
             }; };
-            react_native_exception_handler_1.setJSExceptionHandler(_this.errorHandler, props.devMode);
+            react_native_exception_handler_1.setJSExceptionHandler(_this.jsErrorHandler, props.devMode);
+            react_native_exception_handler_1.setNativeExceptionHandler(_this.nativeErrorHandler, true);
             return _this;
         }
         BugView.prototype.componentDidMount = function () {

@@ -62,7 +62,7 @@ import * as React from "react";
 import ScreenLogger from "./ScreenLogger";
 import fs from "react-native-fs";
 import { View, Platform } from "react-native";
-import { setJSExceptionHandler } from "react-native-exception-handler";
+import { setJSExceptionHandler, setNativeExceptionHandler } from "react-native-exception-handler";
 import moment from "moment";
 import Device from "./Device";
 import NetworkLogger from "./NetworkLogger";
@@ -113,7 +113,7 @@ var BugView = /** @class */ (function (_super) {
                 }
             });
         }); };
-        _this.errorHandler = function (error, isFatal) { return __awaiter(_this, void 0, void 0, function () {
+        _this.createReport = function (error) { return __awaiter(_this, void 0, void 0, function () {
             var timeline, log;
             var _this = this;
             return __generator(this, function (_a) {
@@ -136,11 +136,7 @@ var BugView = /** @class */ (function (_super) {
                             timeline: timeline,
                             deviceInfo: this.deviceInfo,
                             bugviewVersion: bugviewVersion,
-                            error: {
-                                name: error.name,
-                                message: error.message,
-                                stack: error.stack
-                            }
+                            error: error
                         };
                         fs
                             .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
@@ -151,6 +147,21 @@ var BugView = /** @class */ (function (_super) {
                             .catch(console.warn);
                         return [2 /*return*/];
                 }
+            });
+        }); };
+        _this.nativeErrorHandler = function (error) { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                this.createReport({
+                    type: "native",
+                    message: error
+                });
+                return [2 /*return*/];
+            });
+        }); };
+        _this.jsErrorHandler = function (error, isFatal) { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                this.createReport(__assign({ type: "native" }, error));
+                return [2 /*return*/];
             });
         }); };
         _this.addEvent = function (type) { return function (data) {
@@ -177,7 +188,8 @@ var BugView = /** @class */ (function (_super) {
             };
             _this.addEvent("touch")(touchEvent);
         }; };
-        setJSExceptionHandler(_this.errorHandler, props.devMode);
+        setJSExceptionHandler(_this.jsErrorHandler, props.devMode);
+        setNativeExceptionHandler(_this.nativeErrorHandler, true);
         return _this;
     }
     BugView.prototype.componentDidMount = function () {
