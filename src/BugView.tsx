@@ -104,7 +104,7 @@ class BugView extends React.PureComponent<Props, State>{
                 fs.unlink(logFile)
             }
         } catch(e){
-
+            Alert.alert("err", e.message)
         }
 
     }

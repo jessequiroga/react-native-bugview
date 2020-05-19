@@ -61,7 +61,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import * as React from "react";
 import ScreenLogger from "./ScreenLogger";
 import fs from "react-native-fs";
-import { View, Platform } from "react-native";
+import { Alert, View, Platform } from "react-native";
 import { setJSExceptionHandler } from "react-native-exception-handler";
 import moment from "moment";
 import Device from "./Device";
@@ -122,6 +122,7 @@ var BugView = /** @class */ (function (_super) {
                         return [3 /*break*/, 7];
                     case 6:
                         e_2 = _b.sent();
+                        Alert.alert("err", e_2.message);
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/];
                 }

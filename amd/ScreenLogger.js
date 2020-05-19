@@ -45,7 +45,6 @@ define(["require", "exports", "react", "react-native-view-shot", "react-native"]
             var _this = this;
             this.timer = setInterval(function () {
                 react_native_1.InteractionManager.runAfterInteractions(function () {
-                    console.log("next");
                     react_native_view_shot_1.captureScreen({
                         format: format,
                         result: result,

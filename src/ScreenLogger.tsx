@@ -18,7 +18,6 @@ export default class ScreenLogger extends React.PureComponent<Props> {
         
         this.timer = setInterval(() => {
             InteractionManager.runAfterInteractions(() => {
-                console.log("next")
                 captureScreen({
                     format,
                     result,

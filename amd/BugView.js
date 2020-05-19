@@ -145,6 +145,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                             return [3 /*break*/, 7];
                         case 6:
                             e_2 = _b.sent();
+                            react_native_1.Alert.alert("err", e_2.message);
                             return [3 /*break*/, 7];
                         case 7: return [2 /*return*/];
                     }

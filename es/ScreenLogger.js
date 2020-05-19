@@ -25,7 +25,6 @@ var ScreenLogger = /** @class */ (function (_super) {
         var _this = this;
         this.timer = setInterval(function () {
             InteractionManager.runAfterInteractions(function () {
-                console.log("next");
                 captureScreen({
                     format: format,
                     result: result,
