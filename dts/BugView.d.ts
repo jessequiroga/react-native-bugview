@@ -7,6 +7,7 @@ declare type Props = {
     renderErrorScreen?: (props: {
         error: Error;
         savingReport: boolean;
+        restartApp: () => void;
     }) => React.ReactNode;
     disableRecordScreen?: boolean;
     devMode?: boolean;

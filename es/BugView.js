@@ -208,10 +208,15 @@ var BugView = /** @class */ (function (_super) {
         configurable: true
     });
     BugView.prototype.render = function () {
+        var _this = this;
         var _a = this.props, renderErrorScreen = _a.renderErrorScreen, disableRecordScreen = _a.disableRecordScreen;
         var _b = this.state, error = _b.error, enabled = _b.enabled, savingReport = _b.savingReport;
         if (error && renderErrorScreen) {
-            return renderErrorScreen({ error: error, savingReport: savingReport });
+            return renderErrorScreen({
+                error: error,
+                savingReport: savingReport,
+                restartApp: function () { return _this.setState({ error: undefined }); }
+            });
         }
         var touchEvents = {};
         if (!disableRecordScreen) {

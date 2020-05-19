@@ -11,7 +11,7 @@ type Props = {
     appVersion?: string,
     onCrashReport?: (uri: string) => Promise<void>,
     onSaveReport?: ()=>void,
-    renderErrorScreen?: (props: {error: Error, savingReport: boolean}) => React.ReactNode,
+    renderErrorScreen?: (props: {error: Error, savingReport: boolean, restartApp: ()=>void}) => React.ReactNode,
     disableRecordScreen?: boolean,
     devMode?: boolean,
     recordTime?: number
@@ -170,7 +170,11 @@ class BugView extends React.PureComponent<Props, State>{
         const { renderErrorScreen, disableRecordScreen } = this.props;
         const { error, enabled, savingReport } = this.state;
         if (error && renderErrorScreen) {
-            return renderErrorScreen({error, savingReport})
+            return renderErrorScreen({
+                error, 
+                savingReport,
+                restartApp: ()=>this.setState({ error: undefined })
+            })
         }
 
         let touchEvents = {}
