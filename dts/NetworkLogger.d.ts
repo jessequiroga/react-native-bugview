@@ -18,13 +18,14 @@ declare class NetworkRequestInfo {
     serverError: undefined;
     constructor(type: string, method: string, url: string);
 }
-export declare const LOGGER_FILENAME = "network_monitor_logger.txt";
-declare type Callback = (e: NetworkRequestInfo[]) => void;
+declare type Callback = (e: NetworkRequestInfo) => void;
 export default class NetworkLogger {
     _requests: NetworkRequestInfo[];
     _xhrIdMap: Record<number, number>;
     callback: Callback;
-    setCallback(callback: () => void): void;
+    startRequestCallback: Callback;
+    setStartRequestCallback(callback: Callback): void;
+    setCallback(callback: Callback): void;
     _getRequestIndexByXHRID(index?: number): number;
     enableXHRInterception(): void;
     getRequests(): NetworkRequestInfo[];

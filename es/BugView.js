@@ -11,6 +11,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -54,6 +65,7 @@ import { View, Platform } from "react-native";
 import { setJSExceptionHandler } from "react-native-exception-handler";
 import moment from "moment";
 import Device from "./Device";
+import NetworkLogger from "./NetworkLogger";
 var logFile = fs.DocumentDirectoryPath + "/log.json";
 var rate = Platform.select({ ios: 500, android: 700 });
 function format(date, format) {
@@ -61,6 +73,7 @@ function format(date, format) {
     return moment(date).format(format);
 }
 var bugviewVersion = "0.0.2";
+var networkLogger = new NetworkLogger();
 var BugView = /** @class */ (function (_super) {
     __extends(BugView, _super);
     function BugView(props) {
@@ -71,6 +84,11 @@ var BugView = /** @class */ (function (_super) {
             enabled: false
         };
         _this.deviceInfo = {};
+        _this.initNetworkLogger = function () {
+            networkLogger.setCallback(_this.addEvent("request"));
+            networkLogger.setStartRequestCallback(_this.addEvent("request"));
+            networkLogger.enableXHRInterception();
+        };
         _this.sendLog = function () { return __awaiter(_this, void 0, void 0, function () {
             var onCrashReport, wasSent, e_1;
             var _this = this;
@@ -104,13 +122,10 @@ var BugView = /** @class */ (function (_super) {
         }); };
         _this.errorHandler = function (error, isFatal) { return __awaiter(_this, void 0, void 0, function () {
             var timeline, log;
-            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (isFatal) {
-                            this.setState({ error: error });
-                        }
+                        this.setState({ error: error });
                         return [4 /*yield*/, Promise.all(this.timeline.map(function (e) {
                                 if (e.type === "image") {
                                     return fs
@@ -135,11 +150,7 @@ var BugView = /** @class */ (function (_super) {
                         };
                         fs
                             .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
-                            .then(function () {
-                            if (!isFatal) {
-                                _this.sendLog();
-                            }
-                        })
+                            .then(function () { })
                             .catch(console.warn);
                         return [2 /*return*/];
                 }
@@ -148,12 +159,12 @@ var BugView = /** @class */ (function (_super) {
         _this.addEvent = function (type) { return function (data) {
             _this.timeline = _this.timeline
                 .map(function (event) {
-                if (event.type === "image" && event.time <= Date.now() - 10 * 1000) {
+                if (event.type === "image" && event.time <= Date.now() - _this.recordTime * 1000) {
                     fs.unlink(event.data);
                 }
                 return event;
             })
-                .filter(function (event) { return event.time >= Date.now() - 10 * 1000; });
+                .filter(function (event) { return event.time >= Date.now() - _this.recordTime * 1000; });
             _this.timeline.push({
                 time: Date.now(),
                 type: type,
@@ -169,7 +180,7 @@ var BugView = /** @class */ (function (_super) {
             };
             _this.addEvent("touch")(touchEvent);
         }; };
-        setJSExceptionHandler(_this.errorHandler, true);
+        setJSExceptionHandler(_this.errorHandler, props.devMode);
         return _this;
     }
     BugView.prototype.componentDidMount = function () {
@@ -190,16 +201,32 @@ var BugView = /** @class */ (function (_super) {
         }); })
             .catch(console.warn);
     };
+    Object.defineProperty(BugView.prototype, "recordTime", {
+        get: function () {
+            return this.props.recordTime || 15;
+        },
+        enumerable: false,
+        configurable: true
+    });
     BugView.prototype.render = function () {
-        var renderErrorScreen = this.props.renderErrorScreen;
-        var _a = this.state, error = _a.error, enabled = _a.enabled;
+        var _a = this.props, renderErrorScreen = _a.renderErrorScreen, disableRecordScreen = _a.disableRecordScreen;
+        var _b = this.state, error = _b.error, enabled = _b.enabled;
         if (error && renderErrorScreen) {
             return renderErrorScreen(error);
         }
+        var touchEvents = {};
+        if (!disableRecordScreen) {
+            touchEvents = {
+                onTouchStart: this.trackTouches("start"),
+                onTouchMove: this.trackTouches("move"),
+                onTouchEnd: this.trackTouches("end")
+            };
+        }
         return React.createElement(React.Fragment, null,
-            enabled &&
+            !disableRecordScreen &&
+                enabled &&
                 React.createElement(ScreenLogger, { onCapture: this.addEvent("image"), rate: rate }),
-            React.createElement(View, { style: { flex: 1 }, onTouchStart: this.trackTouches("start"), onTouchMove: this.trackTouches("move"), onTouchEnd: this.trackTouches("end") }, this.props.children));
+            React.createElement(View, __assign({ style: { flex: 1 } }, touchEvents), this.props.children));
     };
     return BugView;
 }(React.PureComponent));

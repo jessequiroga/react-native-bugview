@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 define(["require", "exports", "react-native/Libraries/Network/XHRInterceptor"], function (require, exports, XHRInterceptor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.LOGGER_FILENAME = void 0;
     XHRInterceptor_1 = __importDefault(XHRInterceptor_1);
     var nextXHRId = 0;
     var NetworkRequestInfo = /** @class */ (function () {
@@ -32,60 +31,16 @@ define(["require", "exports", "react-native/Libraries/Network/XHRInterceptor"], 
         }
         return NetworkRequestInfo;
     }());
-    exports.LOGGER_FILENAME = 'network_monitor_logger.txt';
     var NetworkLogger = /** @class */ (function () {
         function NetworkLogger() {
             this._requests = [];
             this._xhrIdMap = {};
             this.callback = function () { };
-            // sendFeedbackEmail(email, password, subject, message) {
-            //     this.saveNetworkLogger(LOGGER_FILENAME)
-            //         .then(response =>
-            //             this.sendMail(
-            //                 LOGGER_FILENAME,
-            //                 email,
-            //                 password,
-            //                 subject,
-            //                 message,
-            //             ),
-            //         )
-            //         .then(response => this.deleteNetworkLogger(LOGGER_FILENAME))
-            //         .then(response => console.log('SUCCESS'))
-            //         .catch(error => console.log(error))
-            // }
-            // sendMail(filename, email, password, subject, message) {
-            //     console.log('logger.sendFeedbackEmail')
-            //     return RNSmtpMailer.sendMail({
-            //         mailhost: 'smtp.gmail.com',
-            //         port: '465',
-            //         ssl: true,
-            //         username: email,
-            //         from: email,
-            //         password: password,
-            //         recipients: email,
-            //         subject: subject,
-            //         htmlBody: message,
-            //         attachmentPaths: [this.getPath(filename)],
-            //         attachmentNames: [filename],
-            //         attachmentTypes: ['txt'],
-            //     })
-            // }
-            // saveNetworkLogger(filename: string) {
-            //     console.log('logger.saveNetworkLogger')
-            //     return RNFS.writeFile(
-            //         this.getPath(filename),
-            //         JSON.stringify(this.getRequests()),
-            //         'utf8',
-            //     )
-            // }
-            // deleteNetworkLogger(filename: string) {
-            //     console.log('logger.deleteNetworkLogger')
-            //     return RNFS.unlink(this.getPath(filename))
-            // }
-            // getPath(filename: string) {
-            //     return RNFS.DocumentDirectoryPath + '/' + filename
-            // }
+            this.startRequestCallback = function () { };
         }
+        NetworkLogger.prototype.setStartRequestCallback = function (callback) {
+            this.callback = callback;
+        };
         NetworkLogger.prototype.setCallback = function (callback) {
             this.callback = callback;
         };
@@ -130,6 +85,7 @@ define(["require", "exports", "react-native/Libraries/Network/XHRInterceptor"], 
                     return;
                 }
                 _this._requests[xhrIndex].dataSent = data;
+                _this.startRequestCallback && _this.startRequestCallback(_this._requests[xhrIndex]);
             });
             XHRInterceptor_1.default.setHeaderReceivedCallback(function (type, size, responseHeaders, xhr) {
                 var xhrIndex = _this._getRequestIndexByXHRID(xhr._index);
@@ -152,7 +108,7 @@ define(["require", "exports", "react-native/Libraries/Network/XHRInterceptor"], 
                 networkInfo.response = response;
                 networkInfo.responseURL = responseURL;
                 networkInfo.responseType = responseType;
-                _this.callback(_this._requests);
+                _this.callback && _this.callback(networkInfo);
             });
             XHRInterceptor_1.default.enableInterception();
         };

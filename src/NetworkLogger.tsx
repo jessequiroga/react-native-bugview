@@ -1,6 +1,6 @@
 //@ts-ignore
 import XHRInterceptor from 'react-native/Libraries/Network/XHRInterceptor'
-import RNFS from 'react-native-fs'
+
 let nextXHRId = 0
 
 class NetworkRequestInfo {
@@ -29,16 +29,20 @@ class NetworkRequestInfo {
     }
 }
 
-export const LOGGER_FILENAME = 'network_monitor_logger.txt'
 
-type Callback = (e: NetworkRequestInfo[]) => void
+type Callback = (e: NetworkRequestInfo) => void
 
 export default class NetworkLogger {
     _requests: NetworkRequestInfo[] = []
     _xhrIdMap: Record<number, number> = {}
     callback:Callback = () => {}
+    startRequestCallback:Callback = () => {}
 
-    setCallback(callback: ()=>void) {
+    setStartRequestCallback(callback: Callback) {
+        this.callback = callback
+    }
+
+    setCallback(callback: Callback) {
         this.callback = callback
     }
 
@@ -85,7 +89,8 @@ export default class NetworkLogger {
             if (xhrIndex === -1) {
                 return
             }
-            this._requests[xhrIndex].dataSent = data
+            this._requests[xhrIndex].dataSent = data;
+            this.startRequestCallback && this.startRequestCallback(this._requests[xhrIndex])
         })
 
         XHRInterceptor.setHeaderReceivedCallback(
@@ -113,7 +118,7 @@ export default class NetworkLogger {
                 networkInfo.response = response
                 networkInfo.responseURL = responseURL
                 networkInfo.responseType = responseType
-                this.callback(this._requests)
+                this.callback && this.callback(networkInfo)
             },
         )
         XHRInterceptor.enableInterception()
@@ -123,55 +128,5 @@ export default class NetworkLogger {
         return this._requests
     }
 
-    // sendFeedbackEmail(email, password, subject, message) {
-    //     this.saveNetworkLogger(LOGGER_FILENAME)
-    //         .then(response =>
-    //             this.sendMail(
-    //                 LOGGER_FILENAME,
-    //                 email,
-    //                 password,
-    //                 subject,
-    //                 message,
-    //             ),
-    //         )
-    //         .then(response => this.deleteNetworkLogger(LOGGER_FILENAME))
-    //         .then(response => console.log('SUCCESS'))
-    //         .catch(error => console.log(error))
-    // }
 
-    // sendMail(filename, email, password, subject, message) {
-    //     console.log('logger.sendFeedbackEmail')
-    //     return RNSmtpMailer.sendMail({
-    //         mailhost: 'smtp.gmail.com',
-    //         port: '465',
-    //         ssl: true,
-    //         username: email,
-    //         from: email,
-    //         password: password,
-    //         recipients: email,
-    //         subject: subject,
-    //         htmlBody: message,
-    //         attachmentPaths: [this.getPath(filename)],
-    //         attachmentNames: [filename],
-    //         attachmentTypes: ['txt'],
-    //     })
-    // }
-
-    // saveNetworkLogger(filename: string) {
-    //     console.log('logger.saveNetworkLogger')
-    //     return RNFS.writeFile(
-    //         this.getPath(filename),
-    //         JSON.stringify(this.getRequests()),
-    //         'utf8',
-    //     )
-    // }
-
-    // deleteNetworkLogger(filename: string) {
-    //     console.log('logger.deleteNetworkLogger')
-    //     return RNFS.unlink(this.getPath(filename))
-    // }
-
-    // getPath(filename: string) {
-    //     return RNFS.DocumentDirectoryPath + '/' + filename
-    // }
 }

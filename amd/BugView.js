@@ -11,6 +11,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -69,7 +80,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "react-native", "react-native-exception-handler", "moment", "./Device"], function (require, exports, React, ScreenLogger_1, react_native_fs_1, react_native_1, react_native_exception_handler_1, moment_1, Device_1) {
+define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "react-native", "react-native-exception-handler", "moment", "./Device", "./NetworkLogger"], function (require, exports, React, ScreenLogger_1, react_native_fs_1, react_native_1, react_native_exception_handler_1, moment_1, Device_1, NetworkLogger_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     React = __importStar(React);
@@ -77,6 +88,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
     react_native_fs_1 = __importDefault(react_native_fs_1);
     moment_1 = __importDefault(moment_1);
     Device_1 = __importDefault(Device_1);
+    NetworkLogger_1 = __importDefault(NetworkLogger_1);
     var logFile = react_native_fs_1.default.DocumentDirectoryPath + "/log.json";
     var rate = react_native_1.Platform.select({ ios: 500, android: 700 });
     function format(date, format) {
@@ -84,6 +96,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
         return moment_1.default(date).format(format);
     }
     var bugviewVersion = "0.0.2";
+    var networkLogger = new NetworkLogger_1.default();
     var BugView = /** @class */ (function (_super) {
         __extends(BugView, _super);
         function BugView(props) {
@@ -94,6 +107,11 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                 enabled: false
             };
             _this.deviceInfo = {};
+            _this.initNetworkLogger = function () {
+                networkLogger.setCallback(_this.addEvent("request"));
+                networkLogger.setStartRequestCallback(_this.addEvent("request"));
+                networkLogger.enableXHRInterception();
+            };
             _this.sendLog = function () { return __awaiter(_this, void 0, void 0, function () {
                 var onCrashReport, wasSent, e_1;
                 var _this = this;
@@ -127,13 +145,10 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
             }); };
             _this.errorHandler = function (error, isFatal) { return __awaiter(_this, void 0, void 0, function () {
                 var timeline, log;
-                var _this = this;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            if (isFatal) {
-                                this.setState({ error: error });
-                            }
+                            this.setState({ error: error });
                             return [4 /*yield*/, Promise.all(this.timeline.map(function (e) {
                                     if (e.type === "image") {
                                         return react_native_fs_1.default
@@ -158,11 +173,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                             };
                             react_native_fs_1.default
                                 .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
-                                .then(function () {
-                                if (!isFatal) {
-                                    _this.sendLog();
-                                }
-                            })
+                                .then(function () { })
                                 .catch(console.warn);
                             return [2 /*return*/];
                     }
@@ -171,12 +182,12 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
             _this.addEvent = function (type) { return function (data) {
                 _this.timeline = _this.timeline
                     .map(function (event) {
-                    if (event.type === "image" && event.time <= Date.now() - 10 * 1000) {
+                    if (event.type === "image" && event.time <= Date.now() - _this.recordTime * 1000) {
                         react_native_fs_1.default.unlink(event.data);
                     }
                     return event;
                 })
-                    .filter(function (event) { return event.time >= Date.now() - 10 * 1000; });
+                    .filter(function (event) { return event.time >= Date.now() - _this.recordTime * 1000; });
                 _this.timeline.push({
                     time: Date.now(),
                     type: type,
@@ -192,7 +203,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                 };
                 _this.addEvent("touch")(touchEvent);
             }; };
-            react_native_exception_handler_1.setJSExceptionHandler(_this.errorHandler, true);
+            react_native_exception_handler_1.setJSExceptionHandler(_this.errorHandler, props.devMode);
             return _this;
         }
         BugView.prototype.componentDidMount = function () {
@@ -213,16 +224,32 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
             }); })
                 .catch(console.warn);
         };
+        Object.defineProperty(BugView.prototype, "recordTime", {
+            get: function () {
+                return this.props.recordTime || 15;
+            },
+            enumerable: false,
+            configurable: true
+        });
         BugView.prototype.render = function () {
-            var renderErrorScreen = this.props.renderErrorScreen;
-            var _a = this.state, error = _a.error, enabled = _a.enabled;
+            var _a = this.props, renderErrorScreen = _a.renderErrorScreen, disableRecordScreen = _a.disableRecordScreen;
+            var _b = this.state, error = _b.error, enabled = _b.enabled;
             if (error && renderErrorScreen) {
                 return renderErrorScreen(error);
             }
+            var touchEvents = {};
+            if (!disableRecordScreen) {
+                touchEvents = {
+                    onTouchStart: this.trackTouches("start"),
+                    onTouchMove: this.trackTouches("move"),
+                    onTouchEnd: this.trackTouches("end")
+                };
+            }
             return React.createElement(React.Fragment, null,
-                enabled &&
+                !disableRecordScreen &&
+                    enabled &&
                     React.createElement(ScreenLogger_1.default, { onCapture: this.addEvent("image"), rate: rate }),
-                React.createElement(react_native_1.View, { style: { flex: 1 }, onTouchStart: this.trackTouches("start"), onTouchMove: this.trackTouches("move"), onTouchEnd: this.trackTouches("end") }, this.props.children));
+                React.createElement(react_native_1.View, __assign({ style: { flex: 1 } }, touchEvents), this.props.children));
         };
         return BugView;
     }(React.PureComponent));

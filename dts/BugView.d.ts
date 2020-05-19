@@ -4,6 +4,9 @@ declare type Props = {
     appVersion?: string;
     onCrashReport?: (uri: string) => Promise<void>;
     renderErrorScreen?: (e: Error) => React.ReactNode;
+    disableRecordScreen?: boolean;
+    devMode?: boolean;
+    recordTime?: number;
 };
 declare type State = {
     error: Error | undefined;
@@ -21,10 +24,12 @@ declare class BugView extends React.PureComponent<Props, State> {
     deviceInfo: TDeviceInfo;
     constructor(props: Props);
     componentDidMount(): void;
+    initNetworkLogger: () => void;
     sendLog: () => Promise<void>;
     errorHandler: (error: Error, isFatal: boolean) => Promise<void>;
     addEvent: (type: EventType) => (data: any) => void;
     trackTouches: (eventType: "start" | "move" | "end") => (e: any) => void;
+    get recordTime(): number;
     render(): {} | null | undefined;
 }
 export default BugView;

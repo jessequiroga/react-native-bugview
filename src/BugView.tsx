@@ -5,11 +5,15 @@ import { Alert, View, Text, Platform } from "react-native";
 import { setJSExceptionHandler } from "react-native-exception-handler";
 import moment from "moment";
 import Device, { TDeviceInfo } from "./Device";
+import NetworkLogger from "./NetworkLogger";
 
 type Props = {
     appVersion?: string,
     onCrashReport?: (uri: string) => Promise<void>,
-    renderErrorScreen?: (e: Error) => React.ReactNode
+    renderErrorScreen?: (e: Error) => React.ReactNode,
+    disableRecordScreen?: boolean,
+    devMode?: boolean,
+    recordTime?: number
 }
 
 type State = {
@@ -42,6 +46,8 @@ function format(date: Date, format: string = "DD.MM.YYYY") {
 
 const bugviewVersion = "0.0.2";
 
+const networkLogger = new NetworkLogger();
+
 class BugView extends React.PureComponent<Props, State>{
 
     timeline: Event[] = []
@@ -53,7 +59,7 @@ class BugView extends React.PureComponent<Props, State>{
 
     constructor(props: Props) {
         super(props);
-        setJSExceptionHandler(this.errorHandler, true)
+        setJSExceptionHandler(this.errorHandler, props.devMode)
     }
 
     componentDidMount() {
@@ -68,6 +74,12 @@ class BugView extends React.PureComponent<Props, State>{
                 this.sendLog();
             })
             .catch(console.warn);
+    }
+
+    initNetworkLogger = () => {
+        networkLogger.setCallback(this.addEvent("request"));
+        networkLogger.setStartRequestCallback(this.addEvent("request"));
+        networkLogger.enableXHRInterception();
     }
 
     sendLog = async () => {
@@ -97,9 +109,7 @@ class BugView extends React.PureComponent<Props, State>{
 
 
     errorHandler = async (error: Error, isFatal: boolean) => {
-        if (isFatal) {
-            this.setState({ error });
-        }
+        this.setState({ error });
 
         const timeline = await Promise.all<any>(this.timeline.map(e => {
             if (e.type === "image") {
@@ -125,11 +135,7 @@ class BugView extends React.PureComponent<Props, State>{
 
         fs
             .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
-            .then(() => {
-                if (!isFatal) {
-                    this.sendLog();
-                }
-            })
+            .then(() => { })
             .catch(console.warn)
 
     }
@@ -137,12 +143,12 @@ class BugView extends React.PureComponent<Props, State>{
     addEvent = (type: EventType) => (data: any) => {
         this.timeline = this.timeline
             .map(event => {
-                if (event.type === "image" && event.time <= Date.now() - 10 * 1000) {
+                if (event.type === "image" && event.time <= Date.now() - this.recordTime * 1000) {
                     fs.unlink(event.data);
                 }
                 return event;
             })
-            .filter((event) => event.time >= Date.now() - 10 * 1000);
+            .filter((event) => event.time >= Date.now() - this.recordTime * 1000);
 
 
         this.timeline.push({
@@ -162,15 +168,30 @@ class BugView extends React.PureComponent<Props, State>{
         this.addEvent("touch")(touchEvent)
     }
 
+    get recordTime(){
+        return this.props.recordTime || 15
+    }
 
     render() {
-        const { renderErrorScreen } = this.props;
+        const { renderErrorScreen, disableRecordScreen } = this.props;
         const { error, enabled } = this.state;
         if (error && renderErrorScreen) {
             return renderErrorScreen(error)
         }
+
+        let touchEvents = {}
+
+        if (!disableRecordScreen) {
+            touchEvents = {
+                onTouchStart: this.trackTouches("start"),
+                onTouchMove: this.trackTouches("move"),
+                onTouchEnd: this.trackTouches("end")
+            }
+        }
+
         return <React.Fragment>
             {
+                !disableRecordScreen &&
                 enabled &&
                 <ScreenLogger
                     onCapture={this.addEvent("image")}
@@ -179,9 +200,7 @@ class BugView extends React.PureComponent<Props, State>{
             }
             <View
                 style={{ flex: 1 }}
-                onTouchStart={this.trackTouches("start")}
-                onTouchMove={this.trackTouches("move")}
-                onTouchEnd={this.trackTouches("end")}
+                {...touchEvents}
             >
                 {this.props.children}
             </View>
