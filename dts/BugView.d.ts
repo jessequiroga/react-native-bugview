@@ -4,7 +4,10 @@ declare type Props = {
     appVersion?: string;
     onCrashReport?: (uri: string) => Promise<void>;
     onSaveReport?: () => void;
-    renderErrorScreen?: (e: Error) => React.ReactNode;
+    renderErrorScreen?: (props: {
+        error: Error;
+        savingReport: boolean;
+    }) => React.ReactNode;
     disableRecordScreen?: boolean;
     devMode?: boolean;
     recordTime?: number;
@@ -12,6 +15,7 @@ declare type Props = {
 declare type State = {
     error: Error | undefined;
     enabled: boolean;
+    savingReport: boolean;
 };
 declare type EventType = 'image' | 'request' | 'response' | 'touch';
 declare type Event = {

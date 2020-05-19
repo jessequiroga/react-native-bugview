@@ -104,7 +104,8 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
             _this.timeline = [];
             _this.state = {
                 error: undefined,
-                enabled: false
+                enabled: false,
+                savingReport: false
             };
             _this.deviceInfo = {};
             _this.initNetworkLogger = function () {
@@ -141,7 +142,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            this.setState({ error: error });
+                            this.setState({ error: error, savingReport: true });
                             return [4 /*yield*/, Promise.all(this.timeline.map(function (e) {
                                     if (e.type === "image") {
                                         return react_native_fs_1.default
@@ -167,6 +168,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                             react_native_fs_1.default
                                 .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
                                 .then(function () {
+                                _this.setState({ savingReport: false });
                                 _this.props.onSaveReport && _this.props.onSaveReport();
                             })
                                 .catch(console.warn);
@@ -230,9 +232,9 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
         });
         BugView.prototype.render = function () {
             var _a = this.props, renderErrorScreen = _a.renderErrorScreen, disableRecordScreen = _a.disableRecordScreen;
-            var _b = this.state, error = _b.error, enabled = _b.enabled;
+            var _b = this.state, error = _b.error, enabled = _b.enabled, savingReport = _b.savingReport;
             if (error && renderErrorScreen) {
-                return renderErrorScreen(error);
+                return renderErrorScreen({ error: error, savingReport: savingReport });
             }
             var touchEvents = {};
             if (!disableRecordScreen) {

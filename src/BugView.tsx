@@ -11,7 +11,7 @@ type Props = {
     appVersion?: string,
     onCrashReport?: (uri: string) => Promise<void>,
     onSaveReport?: ()=>void,
-    renderErrorScreen?: (e: Error) => React.ReactNode,
+    renderErrorScreen?: (props: {error: Error, savingReport: boolean}) => React.ReactNode,
     disableRecordScreen?: boolean,
     devMode?: boolean,
     recordTime?: number
@@ -19,7 +19,8 @@ type Props = {
 
 type State = {
     error: Error | undefined,
-    enabled: boolean
+    enabled: boolean,
+    savingReport: boolean
 }
 
 type EventType = 'image' | 'request' | 'response' | 'touch';
@@ -54,7 +55,8 @@ class BugView extends React.PureComponent<Props, State>{
     timeline: Event[] = []
     state: State = {
         error: undefined,
-        enabled: false
+        enabled: false,
+        savingReport: false
     }
     deviceInfo: TDeviceInfo = {};
 
@@ -98,7 +100,7 @@ class BugView extends React.PureComponent<Props, State>{
 
 
     errorHandler = async (error: Error, isFatal: boolean) => {
-        this.setState({ error });
+        this.setState({ error, savingReport: true });
 
         const timeline = await Promise.all<any>(this.timeline.map(e => {
             if (e.type === "image") {
@@ -125,6 +127,7 @@ class BugView extends React.PureComponent<Props, State>{
         fs
             .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
             .then(() => { 
+                this.setState({ savingReport: false });
                 this.props.onSaveReport && this.props.onSaveReport()
             })
             .catch(console.warn)
@@ -165,9 +168,9 @@ class BugView extends React.PureComponent<Props, State>{
 
     render() {
         const { renderErrorScreen, disableRecordScreen } = this.props;
-        const { error, enabled } = this.state;
+        const { error, enabled, savingReport } = this.state;
         if (error && renderErrorScreen) {
-            return renderErrorScreen(error)
+            return renderErrorScreen({error, savingReport})
         }
 
         let touchEvents = {}
