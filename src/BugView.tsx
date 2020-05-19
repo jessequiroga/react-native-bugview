@@ -133,24 +133,6 @@ class BugView extends React.PureComponent<Props, State>{
     }
 
     nativeErrorHandler = async (error: string) => {
-        Alert.alert(
-            'Unexpected error occurred',
-            `Error: ${error}
-                 Please close the app and start again!
-                `,
-            [
-                /* {
-                    text: 'Send report',
-                    onPress: () => {
-                        ReportService.problemReport(strError);
-                    }
-                } */
-                {
-                    text: 'Restart',
-                    onPress: () => {}
-                }
-            ]
-        );
         this.createReport({
             type: "native",
             message: error
