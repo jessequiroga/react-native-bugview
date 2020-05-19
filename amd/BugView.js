@@ -137,6 +137,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
             }); };
             _this.errorHandler = function (error, isFatal) { return __awaiter(_this, void 0, void 0, function () {
                 var timeline, log;
+                var _this = this;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -165,7 +166,9 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                             };
                             react_native_fs_1.default
                                 .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
-                                .then(function () { })
+                                .then(function () {
+                                _this.props.onSaveReport && _this.props.onSaveReport();
+                            })
                                 .catch(console.warn);
                             return [2 /*return*/];
                     }

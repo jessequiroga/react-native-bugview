@@ -10,6 +10,7 @@ import NetworkLogger from "./NetworkLogger";
 type Props = {
     appVersion?: string,
     onCrashReport?: (uri: string) => Promise<void>,
+    onSaveReport?: ()=>void,
     renderErrorScreen?: (e: Error) => React.ReactNode,
     disableRecordScreen?: boolean,
     devMode?: boolean,
@@ -123,7 +124,9 @@ class BugView extends React.PureComponent<Props, State>{
 
         fs
             .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
-            .then(() => { })
+            .then(() => { 
+                this.props.onSaveReport && this.props.onSaveReport()
+            })
             .catch(console.warn)
 
     }

@@ -3,6 +3,7 @@ import { TDeviceInfo } from "./Device";
 declare type Props = {
     appVersion?: string;
     onCrashReport?: (uri: string) => Promise<void>;
+    onSaveReport?: () => void;
     renderErrorScreen?: (e: Error) => React.ReactNode;
     disableRecordScreen?: boolean;
     devMode?: boolean;
