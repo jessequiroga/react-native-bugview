@@ -61,7 +61,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import * as React from "react";
 import ScreenLogger from "./ScreenLogger";
 import fs from "react-native-fs";
-import { View, Platform } from "react-native";
+import { Alert, View, Platform } from "react-native";
 import { setJSExceptionHandler, setNativeExceptionHandler } from "react-native-exception-handler";
 import moment from "moment";
 import Device from "./Device";
@@ -151,6 +151,18 @@ var BugView = /** @class */ (function (_super) {
         }); };
         _this.nativeErrorHandler = function (error) { return __awaiter(_this, void 0, void 0, function () {
             return __generator(this, function (_a) {
+                Alert.alert('Unexpected error occurred', "Error: " + error + "\n                 Please close the app and start again!\n                ", [
+                    /* {
+                        text: 'Send report',
+                        onPress: () => {
+                            ReportService.problemReport(strError);
+                        }
+                    } */
+                    {
+                        text: 'Restart',
+                        onPress: function () { }
+                    }
+                ]);
                 this.createReport({
                     type: "native",
                     message: error
