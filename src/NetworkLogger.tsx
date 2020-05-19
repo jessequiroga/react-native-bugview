@@ -39,7 +39,7 @@ export default class NetworkLogger {
     startRequestCallback:Callback = () => {}
 
     setStartRequestCallback(callback: Callback) {
-        this.callback = callback
+        this.startRequestCallback = callback
     }
 
     setCallback(callback: Callback) {

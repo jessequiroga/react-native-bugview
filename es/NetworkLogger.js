@@ -34,7 +34,7 @@ var NetworkLogger = /** @class */ (function () {
         this.startRequestCallback = function () { };
     }
     NetworkLogger.prototype.setStartRequestCallback = function (callback) {
-        this.callback = callback;
+        this.startRequestCallback = callback;
     };
     NetworkLogger.prototype.setCallback = function (callback) {
         this.callback = callback;

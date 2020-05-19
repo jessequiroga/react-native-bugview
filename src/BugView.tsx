@@ -83,27 +83,29 @@ class BugView extends React.PureComponent<Props, State>{
     }
 
     sendLog = async () => {
-        const { onCrashReport } = this.props;
-        if (!onCrashReport) return;
-
-        Device.getInfo().then(info => this.deviceInfo = info);
-
-        let wasSent = false
-
-        if (onCrashReport) {
-            try {
-                await onCrashReport(logFile);
-                wasSent = true
-            } catch (e) {
-
+        try{
+            const { onCrashReport } = this.props;
+            if (!onCrashReport) return;
+    
+            this.deviceInfo = await Device.getInfo()
+            let wasSent = false
+    
+            if (onCrashReport) {
+                try {
+                    await onCrashReport(logFile);
+                    wasSent = true
+                } catch (e) {
+    
+                }
+    
             }
+    
+            if (wasSent) {
+                fs.unlink(logFile)
+            }
+        } catch(e){
 
         }
-
-        if (wasSent) {
-            fs.unlink(logFile)
-        }
-
 
     }
 
