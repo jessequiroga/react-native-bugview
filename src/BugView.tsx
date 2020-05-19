@@ -65,7 +65,7 @@ class BugView extends React.PureComponent<Props, State>{
     constructor(props: Props) {
         super(props);
         setJSExceptionHandler(this.jsErrorHandler, props.devMode);
-        setNativeExceptionHandler(this.nativeErrorHandler, true);
+        setNativeExceptionHandler(this.nativeErrorHandler, false, true);
     }
 
     componentDidMount() {

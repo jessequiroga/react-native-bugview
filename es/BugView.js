@@ -189,7 +189,7 @@ var BugView = /** @class */ (function (_super) {
             _this.addEvent("touch")(touchEvent);
         }; };
         setJSExceptionHandler(_this.jsErrorHandler, props.devMode);
-        setNativeExceptionHandler(_this.nativeErrorHandler, true);
+        setNativeExceptionHandler(_this.nativeErrorHandler, false, true);
         return _this;
     }
     BugView.prototype.componentDidMount = function () {

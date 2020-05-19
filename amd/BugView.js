@@ -212,7 +212,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                 _this.addEvent("touch")(touchEvent);
             }; };
             react_native_exception_handler_1.setJSExceptionHandler(_this.jsErrorHandler, props.devMode);
-            react_native_exception_handler_1.setNativeExceptionHandler(_this.nativeErrorHandler, true);
+            react_native_exception_handler_1.setNativeExceptionHandler(_this.nativeErrorHandler, false, true);
             return _this;
         }
         BugView.prototype.componentDidMount = function () {
