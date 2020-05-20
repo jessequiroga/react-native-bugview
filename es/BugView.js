@@ -160,6 +160,7 @@ var BugView = /** @class */ (function (_super) {
         }); };
         _this.jsErrorHandler = function (error, isFatal) { return __awaiter(_this, void 0, void 0, function () {
             return __generator(this, function (_a) {
+                console.log(error);
                 this.createReport({
                     type: "js",
                     name: error.name,
