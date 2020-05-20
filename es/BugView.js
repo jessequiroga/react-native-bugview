@@ -124,7 +124,7 @@ var BugView = /** @class */ (function (_super) {
                                 if (e.type === "image") {
                                     return fs
                                         .readFile(e.data, { encoding: "base64" })
-                                        .then(function (file) { e.data = file; return e; })
+                                        .then(function (file) { return (__assign(__assign({}, e), { data: file })); })
                                         .catch(console.warn);
                                 }
                                 return Promise.resolve(e);

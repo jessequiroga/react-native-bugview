@@ -147,7 +147,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                                     if (e.type === "image") {
                                         return react_native_fs_1.default
                                             .readFile(e.data, { encoding: "base64" })
-                                            .then(function (file) { e.data = file; return e; })
+                                            .then(function (file) { return (__assign(__assign({}, e), { data: file })); })
                                             .catch(console.warn);
                                     }
                                     return Promise.resolve(e);

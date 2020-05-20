@@ -109,7 +109,7 @@ class BugView extends React.PureComponent<Props, State>{
             if (e.type === "image") {
                 return fs
                     .readFile(e.data, { encoding: "base64" })
-                    .then(file => { e.data = file; return e })
+                    .then(file =>({...e, data: file}))
                     .catch(console.warn)
             }
             return Promise.resolve(e)
