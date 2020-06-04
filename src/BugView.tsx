@@ -6,15 +6,16 @@ import { setJSExceptionHandler, setNativeExceptionHandler } from "react-native-e
 import moment from "moment";
 import Device, { TDeviceInfo } from "./Device";
 import NetworkLogger from "./NetworkLogger";
+import BugViewContext from "./BugViewContext";
 
 type Props = {
     appVersion?: string,
-    onCrashReport?: (uri: string) => Promise<void>,
+    onCrashReport: (uri: string) => Promise<void>,
     onSaveReport?: () => void,
     renderErrorScreen?: (props: { error: TError, savingReport: boolean, restartApp: () => void }) => React.ReactNode,
     disableRecordScreen?: boolean,
     devMode?: boolean,
-    recordTime?: number
+    recordTime?: number,
 }
 
 type State = {
@@ -23,7 +24,7 @@ type State = {
     savingReport: boolean
 }
 
-type EventType = 'image' | 'request' | 'response' | 'touch';
+type EventType = 'image' | 'request' | 'response' | 'touch' | 'navigate';
 
 type Event = {
     time: number,
@@ -60,6 +61,9 @@ class BugView extends React.PureComponent<Props, State>{
         enabled: false,
         savingReport: false
     }
+
+    additionalParams: Record<string, any> = {}
+
     deviceInfo: TDeviceInfo = {};
 
     constructor(props: Props) {
@@ -116,6 +120,7 @@ class BugView extends React.PureComponent<Props, State>{
         }))
 
         const log: Log = {
+            ...this.additionalParams,
             date: format(new Date()),
             timeline,
             deviceInfo: this.deviceInfo,
@@ -207,7 +212,17 @@ class BugView extends React.PureComponent<Props, State>{
             }
         }
 
-        return <React.Fragment>
+        return <BugViewContext.Provider
+            value={{
+                addParam: (opt)=>{ this.additionalParams = {...this.additionalParams, ...opt}},
+                navigationEvent: (screen, params)=>{
+                    this.addEvent("navigate")({
+                        screen,
+                        params
+                    })
+                }
+            }}
+        >
             {
                 !disableRecordScreen &&
                 enabled &&
@@ -222,7 +237,7 @@ class BugView extends React.PureComponent<Props, State>{
             >
                 {this.props.children}
             </View>
-        </React.Fragment>
+        </BugViewContext.Provider>
 
     }
 }

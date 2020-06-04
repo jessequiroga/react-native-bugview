@@ -80,7 +80,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "react-native", "react-native-exception-handler", "moment", "./Device", "./NetworkLogger"], function (require, exports, React, ScreenLogger_1, react_native_fs_1, react_native_1, react_native_exception_handler_1, moment_1, Device_1, NetworkLogger_1) {
+define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "react-native", "react-native-exception-handler", "moment", "./Device", "./NetworkLogger", "./BugViewContext"], function (require, exports, React, ScreenLogger_1, react_native_fs_1, react_native_1, react_native_exception_handler_1, moment_1, Device_1, NetworkLogger_1, BugViewContext_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     React = __importStar(React);
@@ -89,6 +89,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
     moment_1 = __importDefault(moment_1);
     Device_1 = __importDefault(Device_1);
     NetworkLogger_1 = __importDefault(NetworkLogger_1);
+    BugViewContext_1 = __importDefault(BugViewContext_1);
     var logFile = react_native_fs_1.default.DocumentDirectoryPath + "/log.json";
     var rate = react_native_1.Platform.select({ ios: 500, android: 700 });
     function format(date, format) {
@@ -107,6 +108,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                 enabled: false,
                 savingReport: false
             };
+            _this.additionalParams = {};
             _this.deviceInfo = {};
             _this.initNetworkLogger = function () {
                 networkLogger.setCallback(_this.addEvent("response"));
@@ -154,13 +156,8 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                                 }))];
                         case 1:
                             timeline = _a.sent();
-                            log = {
-                                date: format(new Date()),
-                                timeline: timeline,
-                                deviceInfo: this.deviceInfo,
-                                bugviewVersion: bugviewVersion,
-                                error: error
-                            };
+                            log = __assign(__assign({}, this.additionalParams), { date: format(new Date()), timeline: timeline, deviceInfo: this.deviceInfo, bugviewVersion: bugviewVersion,
+                                error: error });
                             react_native_fs_1.default
                                 .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
                                 .then(function () {
@@ -270,7 +267,15 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                     onTouchEnd: this.trackTouches("end")
                 };
             }
-            return React.createElement(React.Fragment, null,
+            return React.createElement(BugViewContext_1.default.Provider, { value: {
+                    addParam: function (opt) { _this.additionalParams = __assign(__assign({}, _this.additionalParams), opt); },
+                    navigationEvent: function (screen, params) {
+                        _this.addEvent("navigate")({
+                            screen: screen,
+                            params: params
+                        });
+                    }
+                } },
                 !disableRecordScreen &&
                     enabled &&
                     React.createElement(ScreenLogger_1.default, { onCapture: this.addEvent("image"), rate: rate }),

@@ -2,7 +2,7 @@ import * as React from "react";
 import { TDeviceInfo } from "./Device";
 declare type Props = {
     appVersion?: string;
-    onCrashReport?: (uri: string) => Promise<void>;
+    onCrashReport: (uri: string) => Promise<void>;
     onSaveReport?: () => void;
     renderErrorScreen?: (props: {
         error: TError;
@@ -18,7 +18,7 @@ declare type State = {
     enabled: boolean;
     savingReport: boolean;
 };
-declare type EventType = 'image' | 'request' | 'response' | 'touch';
+declare type EventType = 'image' | 'request' | 'response' | 'touch' | 'navigate';
 declare type Event = {
     time: number;
     type: EventType;
@@ -30,6 +30,7 @@ declare type TError = Partial<Error> & {
 declare class BugView extends React.PureComponent<Props, State> {
     timeline: Event[];
     state: State;
+    additionalParams: Record<string, any>;
     deviceInfo: TDeviceInfo;
     constructor(props: Props);
     componentDidMount(): void;

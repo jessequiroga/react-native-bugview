@@ -1,6 +1,6 @@
 {
     "name": "react-native-bugview",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "main": "lib/BugView.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -25,10 +25,11 @@
     },
     "dependencies": {
         "@types/react-native": "^0.60.25",
+        "hoist-non-react-statics": "^3.3.2",
+        "moment": "^2.25.3",
         "react-native-device-info": "^5.5.7",
         "react-native-exception-handler": "^2.10.8",
         "react-native-fs": "^2.16.6",
-        "moment": "^2.25.3",
         "react-native-view-shot": "^3.1.2"
     }
 }

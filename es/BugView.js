@@ -66,6 +66,7 @@ import { setJSExceptionHandler, setNativeExceptionHandler } from "react-native-e
 import moment from "moment";
 import Device from "./Device";
 import NetworkLogger from "./NetworkLogger";
+import BugViewContext from "./BugViewContext";
 var logFile = fs.DocumentDirectoryPath + "/log.json";
 var rate = Platform.select({ ios: 500, android: 700 });
 function format(date, format) {
@@ -84,6 +85,7 @@ var BugView = /** @class */ (function (_super) {
             enabled: false,
             savingReport: false
         };
+        _this.additionalParams = {};
         _this.deviceInfo = {};
         _this.initNetworkLogger = function () {
             networkLogger.setCallback(_this.addEvent("response"));
@@ -131,13 +133,8 @@ var BugView = /** @class */ (function (_super) {
                             }))];
                     case 1:
                         timeline = _a.sent();
-                        log = {
-                            date: format(new Date()),
-                            timeline: timeline,
-                            deviceInfo: this.deviceInfo,
-                            bugviewVersion: bugviewVersion,
-                            error: error
-                        };
+                        log = __assign(__assign({}, this.additionalParams), { date: format(new Date()), timeline: timeline, deviceInfo: this.deviceInfo, bugviewVersion: bugviewVersion,
+                            error: error });
                         fs
                             .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
                             .then(function () {
@@ -247,7 +244,15 @@ var BugView = /** @class */ (function (_super) {
                 onTouchEnd: this.trackTouches("end")
             };
         }
-        return React.createElement(React.Fragment, null,
+        return React.createElement(BugViewContext.Provider, { value: {
+                addParam: function (opt) { _this.additionalParams = __assign(__assign({}, _this.additionalParams), opt); },
+                navigationEvent: function (screen, params) {
+                    _this.addEvent("navigate")({
+                        screen: screen,
+                        params: params
+                    });
+                }
+            } },
             !disableRecordScreen &&
                 enabled &&
                 React.createElement(ScreenLogger, { onCapture: this.addEvent("image"), rate: rate }),
