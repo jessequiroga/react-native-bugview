@@ -49,7 +49,7 @@ function format(date: Date, format: string = "DD.MM.YYYY") {
     return moment(date).format(format)
 }
 
-const bugviewVersion = "0.0.2";
+const bugviewVersion = "0.0.5";
 
 const networkLogger = new NetworkLogger();
 
@@ -154,6 +154,15 @@ class BugView extends React.PureComponent<Props, State>{
             stack: error.stack,
         })
 
+    }
+
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo){
+        this.createReport({
+            type: "js",
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        })
     }
 
     addEvent = (type: EventType) => (data: any) => {

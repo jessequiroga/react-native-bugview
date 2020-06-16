@@ -39,6 +39,7 @@ declare class BugView extends React.PureComponent<Props, State> {
     createReport: (error: TError) => Promise<void>;
     nativeErrorHandler: (error: string) => Promise<void>;
     jsErrorHandler: (error: Error, isFatal: boolean) => Promise<void>;
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void;
     addEvent: (type: EventType) => (data: any) => void;
     trackTouches: (eventType: "start" | "move" | "end") => (e: any) => void;
     get recordTime(): number;

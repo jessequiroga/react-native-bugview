@@ -96,7 +96,7 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
         if (format === void 0) { format = "DD.MM.YYYY"; }
         return moment_1.default(date).format(format);
     }
-    var bugviewVersion = "0.0.2";
+    var bugviewVersion = "0.0.5";
     var networkLogger = new NetworkLogger_1.default();
     var BugView = /** @class */ (function (_super) {
         __extends(BugView, _super);
@@ -237,6 +237,14 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                 });
             }); })
                 .catch(console.warn);
+        };
+        BugView.prototype.componentDidCatch = function (error, errorInfo) {
+            this.createReport({
+                type: "js",
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+            });
         };
         Object.defineProperty(BugView.prototype, "recordTime", {
             get: function () {

@@ -73,7 +73,7 @@ function format(date, format) {
     if (format === void 0) { format = "DD.MM.YYYY"; }
     return moment(date).format(format);
 }
-var bugviewVersion = "0.0.2";
+var bugviewVersion = "0.0.5";
 var networkLogger = new NetworkLogger();
 var BugView = /** @class */ (function (_super) {
     __extends(BugView, _super);
@@ -214,6 +214,14 @@ var BugView = /** @class */ (function (_super) {
             });
         }); })
             .catch(console.warn);
+    };
+    BugView.prototype.componentDidCatch = function (error, errorInfo) {
+        this.createReport({
+            type: "js",
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        });
     };
     Object.defineProperty(BugView.prototype, "recordTime", {
         get: function () {
