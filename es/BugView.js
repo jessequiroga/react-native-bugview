@@ -68,12 +68,13 @@ import Device from "./Device";
 import NetworkLogger from "./NetworkLogger";
 import BugViewContext from "./BugViewContext";
 var logFile = fs.DocumentDirectoryPath + "/log.json";
+var debugFile = fs.DocumentDirectoryPath + "/debug.json";
 var rate = Platform.select({ ios: 500, android: 700 });
 function format(date, format) {
     if (format === void 0) { format = "DD.MM.YYYY"; }
     return moment(date).format(format);
 }
-var bugviewVersion = "0.0.5";
+var bugviewVersion = "0.0.6";
 var networkLogger = new NetworkLogger();
 var BugView = /** @class */ (function (_super) {
     __extends(BugView, _super);
@@ -115,37 +116,62 @@ var BugView = /** @class */ (function (_super) {
                 }
             });
         }); };
-        _this.createReport = function (error) { return __awaiter(_this, void 0, void 0, function () {
-            var timeline, log;
-            var _this = this;
+        _this.getTimeline = function () { return __awaiter(_this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        this.setState({ error: error, savingReport: true });
-                        return [4 /*yield*/, Promise.all(this.timeline.map(function (e) {
-                                if (e.type === "image") {
-                                    return fs
-                                        .readFile(e.data, { encoding: "base64" })
-                                        .then(function (file) { return (__assign(__assign({}, e), { data: file })); })
-                                        .catch(console.warn);
-                                }
-                                return Promise.resolve(e);
-                            }))];
+                    case 0: return [4 /*yield*/, Promise.all(this.timeline.map(function (e) {
+                            if (e.type === "image") {
+                                return fs
+                                    .readFile(e.data, { encoding: "base64" })
+                                    .then(function (file) { return (__assign(__assign({}, e), { data: file })); })
+                                    .catch(console.warn);
+                            }
+                            return Promise.resolve(e);
+                        }))];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        }); };
+        _this.createLogFile = function () { return __awaiter(_this, void 0, void 0, function () {
+            var timeline, log;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getTimeline()];
+                    case 1:
+                        timeline = _a.sent();
+                        log = __assign(__assign({}, this.additionalParams), { date: format(new Date()), timeline: timeline, deviceInfo: this.deviceInfo, bugviewVersion: bugviewVersion });
+                        return [4 /*yield*/, fs.writeFile(debugFile, JSON.stringify(log), { encoding: "utf8" })];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/, debugFile];
+                }
+            });
+        }); };
+        _this.createReportFile = function (error) { return __awaiter(_this, void 0, void 0, function () {
+            var timeline, log;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getTimeline()];
                     case 1:
                         timeline = _a.sent();
                         log = __assign(__assign({}, this.additionalParams), { date: format(new Date()), timeline: timeline, deviceInfo: this.deviceInfo, bugviewVersion: bugviewVersion,
                             error: error });
-                        fs
-                            .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
-                            .then(function () {
-                            _this.setState({ savingReport: false });
-                            _this.props.onSaveReport && _this.props.onSaveReport();
-                        })
-                            .catch(console.warn);
-                        return [2 /*return*/];
+                        return [4 /*yield*/, fs.writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/, logFile];
                 }
             });
         }); };
+        _this.createReport = function (error) {
+            _this.setState({ error: error, savingReport: true });
+            _this.createReportFile(error)
+                .then(function () {
+                _this.setState({ savingReport: false });
+                _this.props.onSaveReport && _this.props.onSaveReport();
+            })
+                .catch(console.warn);
+        };
         _this.nativeErrorHandler = function (error) { return __awaiter(_this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 this.createReport({
@@ -259,7 +285,9 @@ var BugView = /** @class */ (function (_super) {
                         screen: screen,
                         params: params
                     });
-                }
+                },
+                createLogFile: this.createLogFile,
+                bugviewVersion: bugviewVersion
             } },
             !disableRecordScreen &&
                 enabled &&

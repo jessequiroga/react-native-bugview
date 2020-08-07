@@ -91,12 +91,13 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
     NetworkLogger_1 = __importDefault(NetworkLogger_1);
     BugViewContext_1 = __importDefault(BugViewContext_1);
     var logFile = react_native_fs_1.default.DocumentDirectoryPath + "/log.json";
+    var debugFile = react_native_fs_1.default.DocumentDirectoryPath + "/debug.json";
     var rate = react_native_1.Platform.select({ ios: 500, android: 700 });
     function format(date, format) {
         if (format === void 0) { format = "DD.MM.YYYY"; }
         return moment_1.default(date).format(format);
     }
-    var bugviewVersion = "0.0.5";
+    var bugviewVersion = "0.0.6";
     var networkLogger = new NetworkLogger_1.default();
     var BugView = /** @class */ (function (_super) {
         __extends(BugView, _super);
@@ -138,37 +139,62 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                     }
                 });
             }); };
-            _this.createReport = function (error) { return __awaiter(_this, void 0, void 0, function () {
-                var timeline, log;
-                var _this = this;
+            _this.getTimeline = function () { return __awaiter(_this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0:
-                            this.setState({ error: error, savingReport: true });
-                            return [4 /*yield*/, Promise.all(this.timeline.map(function (e) {
-                                    if (e.type === "image") {
-                                        return react_native_fs_1.default
-                                            .readFile(e.data, { encoding: "base64" })
-                                            .then(function (file) { return (__assign(__assign({}, e), { data: file })); })
-                                            .catch(console.warn);
-                                    }
-                                    return Promise.resolve(e);
-                                }))];
+                        case 0: return [4 /*yield*/, Promise.all(this.timeline.map(function (e) {
+                                if (e.type === "image") {
+                                    return react_native_fs_1.default
+                                        .readFile(e.data, { encoding: "base64" })
+                                        .then(function (file) { return (__assign(__assign({}, e), { data: file })); })
+                                        .catch(console.warn);
+                                }
+                                return Promise.resolve(e);
+                            }))];
+                        case 1: return [2 /*return*/, _a.sent()];
+                    }
+                });
+            }); };
+            _this.createLogFile = function () { return __awaiter(_this, void 0, void 0, function () {
+                var timeline, log;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, this.getTimeline()];
+                        case 1:
+                            timeline = _a.sent();
+                            log = __assign(__assign({}, this.additionalParams), { date: format(new Date()), timeline: timeline, deviceInfo: this.deviceInfo, bugviewVersion: bugviewVersion });
+                            return [4 /*yield*/, react_native_fs_1.default.writeFile(debugFile, JSON.stringify(log), { encoding: "utf8" })];
+                        case 2:
+                            _a.sent();
+                            return [2 /*return*/, debugFile];
+                    }
+                });
+            }); };
+            _this.createReportFile = function (error) { return __awaiter(_this, void 0, void 0, function () {
+                var timeline, log;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, this.getTimeline()];
                         case 1:
                             timeline = _a.sent();
                             log = __assign(__assign({}, this.additionalParams), { date: format(new Date()), timeline: timeline, deviceInfo: this.deviceInfo, bugviewVersion: bugviewVersion,
                                 error: error });
-                            react_native_fs_1.default
-                                .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
-                                .then(function () {
-                                _this.setState({ savingReport: false });
-                                _this.props.onSaveReport && _this.props.onSaveReport();
-                            })
-                                .catch(console.warn);
-                            return [2 /*return*/];
+                            return [4 /*yield*/, react_native_fs_1.default.writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })];
+                        case 2:
+                            _a.sent();
+                            return [2 /*return*/, logFile];
                     }
                 });
             }); };
+            _this.createReport = function (error) {
+                _this.setState({ error: error, savingReport: true });
+                _this.createReportFile(error)
+                    .then(function () {
+                    _this.setState({ savingReport: false });
+                    _this.props.onSaveReport && _this.props.onSaveReport();
+                })
+                    .catch(console.warn);
+            };
             _this.nativeErrorHandler = function (error) { return __awaiter(_this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     this.createReport({
@@ -282,7 +308,9 @@ define(["require", "exports", "react", "./ScreenLogger", "react-native-fs", "rea
                             screen: screen,
                             params: params
                         });
-                    }
+                    },
+                    createLogFile: this.createLogFile,
+                    bugviewVersion: bugviewVersion
                 } },
                 !disableRecordScreen &&
                     enabled &&

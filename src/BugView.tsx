@@ -7,6 +7,7 @@ import moment from "moment";
 import Device, { TDeviceInfo } from "./Device";
 import NetworkLogger from "./NetworkLogger";
 import BugViewContext from "./BugViewContext";
+import { TError } from "./types";
 
 type Props = {
     appVersion?: string,
@@ -32,24 +33,25 @@ type Event = {
     data: any
 }
 
-type TError = Partial<Error> & { type: "js" | "native" }
+
 
 type Log = {
     date: string,
     bugviewVersion: string,
     deviceInfo: TDeviceInfo,
     timeline: Event[],
-    error: TError
+    error?: TError
 }
 
 const logFile = fs.DocumentDirectoryPath + `/log.json`;
+const debugFile = fs.DocumentDirectoryPath + `/debug.json`;
 const rate: number = Platform.select({ ios: 500, android: 700 })!
 
 function format(date: Date, format: string = "DD.MM.YYYY") {
     return moment(date).format(format)
 }
 
-const bugviewVersion = "0.0.5";
+const bugviewVersion = "0.0.6";
 
 const networkLogger = new NetworkLogger();
 
@@ -105,11 +107,8 @@ class BugView extends React.PureComponent<Props, State>{
         }
     }
 
-
-    createReport = async (error: TError) => {
-        this.setState({ error, savingReport: true });
-
-        const timeline = await Promise.all<any>(this.timeline.map(e => {
+    getTimeline = async () => {
+        return await Promise.all<any>(this.timeline.map(e => {
             if (e.type === "image") {
                 return fs
                     .readFile(e.data, { encoding: "base64" })
@@ -118,6 +117,25 @@ class BugView extends React.PureComponent<Props, State>{
             }
             return Promise.resolve(e)
         }))
+    }
+
+    createLogFile = async () => {
+        const timeline = await this.getTimeline()
+
+        const log: Log = {
+            ...this.additionalParams,
+            date: format(new Date()),
+            timeline,
+            deviceInfo: this.deviceInfo,
+            bugviewVersion,
+        }
+
+        await fs.writeFile(debugFile, JSON.stringify(log), { encoding: "utf8" })
+        return debugFile
+    }
+
+    createReportFile = async (error: TError) => {
+        const timeline = await this.getTimeline()
 
         const log: Log = {
             ...this.additionalParams,
@@ -128,8 +146,13 @@ class BugView extends React.PureComponent<Props, State>{
             error
         }
 
-        fs
-            .writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
+        await fs.writeFile(logFile, JSON.stringify(log), { encoding: "utf8" })
+        return logFile
+    }
+
+    createReport = (error: TError) => {
+        this.setState({ error, savingReport: true });
+        this.createReportFile(error)
             .then(() => {
                 this.setState({ savingReport: false });
                 this.props.onSaveReport && this.props.onSaveReport()
@@ -229,7 +252,9 @@ class BugView extends React.PureComponent<Props, State>{
                         screen,
                         params
                     })
-                }
+                },
+                createLogFile: this.createLogFile,
+                bugviewVersion
             }}
         >
             {

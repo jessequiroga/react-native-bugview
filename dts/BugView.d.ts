@@ -1,5 +1,6 @@
 import * as React from "react";
 import { TDeviceInfo } from "./Device";
+import { TError } from "./types";
 declare type Props = {
     appVersion?: string;
     onCrashReport: (uri: string) => Promise<void>;
@@ -24,9 +25,6 @@ declare type Event = {
     type: EventType;
     data: any;
 };
-declare type TError = Partial<Error> & {
-    type: "js" | "native";
-};
 declare class BugView extends React.PureComponent<Props, State> {
     timeline: Event[];
     state: State;
@@ -36,7 +34,10 @@ declare class BugView extends React.PureComponent<Props, State> {
     componentDidMount(): void;
     initNetworkLogger: () => void;
     sendLog: () => Promise<void>;
-    createReport: (error: TError) => Promise<void>;
+    getTimeline: () => Promise<any[]>;
+    createLogFile: () => Promise<string>;
+    createReportFile: (error: TError) => Promise<string>;
+    createReport: (error: TError) => void;
     nativeErrorHandler: (error: string) => Promise<void>;
     jsErrorHandler: (error: Error, isFatal: boolean) => Promise<void>;
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void;
