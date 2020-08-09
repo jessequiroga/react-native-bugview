@@ -30,7 +30,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-define(["require", "exports", "react", "react-native-view-shot", "react-native"], function (require, exports, React, react_native_view_shot_1, react_native_1) {
+define(["require", "exports", "react", "react-native-view-shot"], function (require, exports, React, react_native_view_shot_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     React = __importStar(React);
@@ -44,17 +44,26 @@ define(["require", "exports", "react", "react-native-view-shot", "react-native"]
         ScreenLogger.prototype.componentDidMount = function () {
             var _this = this;
             this.timer = setInterval(function () {
-                react_native_1.InteractionManager.runAfterInteractions(function () {
-                    react_native_view_shot_1.captureScreen({
-                        format: format,
-                        result: result,
-                        quality: .1
-                    })
-                        .then(function (image) {
-                        _this.props.onCapture(image);
-                    })
-                        .catch(console.warn);
-                });
+                react_native_view_shot_1.captureScreen({
+                    format: format,
+                    result: result,
+                    quality: .1
+                })
+                    .then(function (image) {
+                    _this.props.onCapture(image);
+                })
+                    .catch(console.warn);
+                // InteractionManager.runAfterInteractions(() => {
+                //     captureScreen({
+                //         format,
+                //         result,
+                //         quality: .1
+                //     })
+                //         .then(image => {
+                //             this.props.onCapture(image);
+                //         })
+                //         .catch(console.warn)
+                // });
             }, this.props.rate);
         };
         ScreenLogger.prototype.componentWillUnmount = function () {

@@ -17,17 +17,26 @@ export default class ScreenLogger extends React.PureComponent<Props> {
     componentDidMount() {
         
         this.timer = setInterval(() => {
-            InteractionManager.runAfterInteractions(() => {
-                captureScreen({
-                    format,
-                    result,
-                    quality: .1
+            captureScreen({
+                format,
+                result,
+                quality: .1
+            })
+                .then(image => {
+                    this.props.onCapture(image);
                 })
-                    .then(image => {
-                        this.props.onCapture(image);
-                    })
-                    .catch(console.warn)
-            });
+                .catch(console.warn)
+            // InteractionManager.runAfterInteractions(() => {
+            //     captureScreen({
+            //         format,
+            //         result,
+            //         quality: .1
+            //     })
+            //         .then(image => {
+            //             this.props.onCapture(image);
+            //         })
+            //         .catch(console.warn)
+            // });
         }, this.props.rate)
     }
 

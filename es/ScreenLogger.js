@@ -13,7 +13,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 import * as React from "react";
 import { captureScreen } from 'react-native-view-shot';
-import { InteractionManager } from "react-native";
 var format = "jpg";
 var result = "tmpfile";
 var ScreenLogger = /** @class */ (function (_super) {
@@ -24,17 +23,26 @@ var ScreenLogger = /** @class */ (function (_super) {
     ScreenLogger.prototype.componentDidMount = function () {
         var _this = this;
         this.timer = setInterval(function () {
-            InteractionManager.runAfterInteractions(function () {
-                captureScreen({
-                    format: format,
-                    result: result,
-                    quality: .1
-                })
-                    .then(function (image) {
-                    _this.props.onCapture(image);
-                })
-                    .catch(console.warn);
-            });
+            captureScreen({
+                format: format,
+                result: result,
+                quality: .1
+            })
+                .then(function (image) {
+                _this.props.onCapture(image);
+            })
+                .catch(console.warn);
+            // InteractionManager.runAfterInteractions(() => {
+            //     captureScreen({
+            //         format,
+            //         result,
+            //         quality: .1
+            //     })
+            //         .then(image => {
+            //             this.props.onCapture(image);
+            //         })
+            //         .catch(console.warn)
+            // });
         }, this.props.rate);
     };
     ScreenLogger.prototype.componentWillUnmount = function () {
